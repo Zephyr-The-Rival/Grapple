@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "UE_Grapple",
+			"Path": "..\\Source\\UE_Grapple.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "UE_GrappleEditor",
+			"Path": "..\\Source\\UE_GrappleEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}

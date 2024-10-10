@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="..\..\UE_Grapple.uproject" />
+    <Filter Include="Source">
+      <UniqueIdentifier>{F31BBDD1-B3E8-3BCC-9652-680E16935819}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\UE_Grapple.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\Source\UE_GrappleEditor.Target.cs">
+      <Filter>Source</Filter>
+    </None>
+    <Filter Include="Config">
+      <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Config\DefaultEditor.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultEngine.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultGame.ini">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\..\Config\DefaultInput.ini">
+      <Filter>Config</Filter>
+    </None>
+    <Filter Include="Source\UE_Grapple">
+      <UniqueIdentifier>{CB4F71A3-3EB7-3604-AC1B-B91651B48053}</UniqueIdentifier>
+    </Filter>
+    <None Include="..\..\Source\UE_Grapple\UE_Grapple.Build.cs">
+      <Filter>Source\UE_Grapple</Filter>
+    </None>
+    <ClCompile Include="..\..\Source\UE_Grapple\UE_Grapple.cpp">
+      <Filter>Source\UE_Grapple</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\UE_Grapple\UE_Grapple.h">
+      <Filter>Source\UE_Grapple</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
