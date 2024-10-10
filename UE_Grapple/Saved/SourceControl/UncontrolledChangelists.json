@@ -6,7 +6,8 @@
 			"description": "Default Uncontrolled Changelist",
 			"files": [
 				"C:/Users/oleor/Documents/GitHub/UniStuff/Projects/Grapple/UE_Grapple/Content/StarterContent/Architecture/Floor_400x400.uasset",
-				"C:/Users/oleor/Documents/GitHub/UniStuff/Projects/Grapple/UE_Grapple/Content/GrappleContent/Maps/TestMap.umap"
+				"C:/Users/oleor/Documents/GitHub/UniStuff/Projects/Grapple/UE_Grapple/Content/GrappleContent/Maps/TestMap.umap",
+				"C:/Users/oleor/Documents/GitHub/UniStuff/Projects/Grapple/UE_Grapple/Content/GrappleContent/PlayerAndGm/BP_GrapplePC.uasset"
 			]
 		}
 	]

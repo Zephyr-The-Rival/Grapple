@@ -1,5 +1,8 @@
 /I "."
+/I "C:\Users\oleor\Documents\GitHub\UniStuff\Projects\Grapple\UE_Grapple\Source\UE_Grapple\Private"
+/I "C:\Users\oleor\Documents\GitHub\UniStuff\Projects\Grapple\UE_Grapple\Intermediate\Build\Win64\UnrealEditor\Inc\UE_Grapple\UHT"
 /I "C:\Users\oleor\Documents\GitHub\UniStuff\Projects\Grapple\UE_Grapple\Source"
+/I "C:\Users\oleor\Documents\GitHub\UniStuff\Projects\Grapple\UE_Grapple\Source\UE_Grapple\Public"
 /I "Runtime\Core\Public"
 /I "Runtime\Core\Internal"
 /I "Runtime\TraceLog\Public"
