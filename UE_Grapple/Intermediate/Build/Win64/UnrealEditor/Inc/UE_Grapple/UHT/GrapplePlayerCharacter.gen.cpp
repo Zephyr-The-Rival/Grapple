@@ -5,7 +5,7 @@
 ===========================================================================*/
 
 #include "UObject/GeneratedCppIncludes.h"
-#include "UE_Grapple/Public/GrapplePlayerCharacter.h"
+#include "UE_Grapple/Public/PlayerAndGM/GrapplePlayerCharacter.h"
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 void EmptyLinkFunctionForGeneratedCodeGrapplePlayerCharacter() {}
 // Cross Module References
@@ -39,8 +39,8 @@ void EmptyLinkFunctionForGeneratedCodeGrapplePlayerCharacter() {}
 #if WITH_METADATA
 	const UECodeGen_Private::FMetaDataPairParam Z_Construct_UClass_AGrapplePlayerCharacter_Statics::Class_MetaDataParams[] = {
 		{ "HideCategories", "Navigation" },
-		{ "IncludePath", "GrapplePlayerCharacter.h" },
-		{ "ModuleRelativePath", "Public/GrapplePlayerCharacter.h" },
+		{ "IncludePath", "PlayerAndGM/GrapplePlayerCharacter.h" },
+		{ "ModuleRelativePath", "Public/PlayerAndGM/GrapplePlayerCharacter.h" },
 	};
 #endif
 	const FCppClassTypeInfoStatic Z_Construct_UClass_AGrapplePlayerCharacter_Statics::StaticCppClassTypeInfo = {
@@ -75,15 +75,15 @@ void EmptyLinkFunctionForGeneratedCodeGrapplePlayerCharacter() {}
 	}
 	DEFINE_VTABLE_PTR_HELPER_CTOR(AGrapplePlayerCharacter);
 	AGrapplePlayerCharacter::~AGrapplePlayerCharacter() {}
-	struct Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_GrapplePlayerCharacter_h_Statics
+	struct Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_PlayerAndGM_GrapplePlayerCharacter_h_Statics
 	{
 		static const FClassRegisterCompiledInInfo ClassInfo[];
 	};
-	const FClassRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_GrapplePlayerCharacter_h_Statics::ClassInfo[] = {
-		{ Z_Construct_UClass_AGrapplePlayerCharacter, AGrapplePlayerCharacter::StaticClass, TEXT("AGrapplePlayerCharacter"), &Z_Registration_Info_UClass_AGrapplePlayerCharacter, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(AGrapplePlayerCharacter), 4239140999U) },
+	const FClassRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_PlayerAndGM_GrapplePlayerCharacter_h_Statics::ClassInfo[] = {
+		{ Z_Construct_UClass_AGrapplePlayerCharacter, AGrapplePlayerCharacter::StaticClass, TEXT("AGrapplePlayerCharacter"), &Z_Registration_Info_UClass_AGrapplePlayerCharacter, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(AGrapplePlayerCharacter), 3461914360U) },
 	};
-	static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_GrapplePlayerCharacter_h_286280164(TEXT("/Script/UE_Grapple"),
-		Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_GrapplePlayerCharacter_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_GrapplePlayerCharacter_h_Statics::ClassInfo),
+	static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_PlayerAndGM_GrapplePlayerCharacter_h_3245213782(TEXT("/Script/UE_Grapple"),
+		Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_PlayerAndGM_GrapplePlayerCharacter_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_Users_oleor_Documents_GitHub_UniStuff_Projects_Grapple_UE_Grapple_Source_UE_Grapple_Public_PlayerAndGM_GrapplePlayerCharacter_h_Statics::ClassInfo),
 		nullptr, 0,
 		nullptr, 0);
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
