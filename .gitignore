@@ -72,3 +72,9 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+UE_Grapple/Saved/AutoScreenshot.png
+UE_Grapple/Intermediate/CachedAssetRegistry_0.bin
+UE_Grapple/Saved/Logs/UE_Grapple-backup-2024.10.10-19.47.26.log
+UE_Grapple/Saved/Logs/UE_Grapple.log
+UE_Grapple/Saved/Config/WindowsEditor/EditorPerProjectUserSettings.ini
+UE_Grapple/Saved/Config/CrashReportClient/UECC-Windows-06EB121C46BD22FFAD1D14A118FBB696/CrashReportClient.ini
