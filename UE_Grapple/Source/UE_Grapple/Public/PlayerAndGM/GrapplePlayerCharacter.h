@@ -5,6 +5,12 @@
 #include "GameFramework/Character.h"
 #include "GrapplePlayerCharacter.generated.h"
 
+//UInputAction;
+
+struct FInputActionValue;
+class UInputAction;
+class UInputMappingContext;
+
 UCLASS()
 class UE_GRAPPLE_API AGrapplePlayerCharacter : public ACharacter
 {
@@ -24,6 +30,19 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+//Components_____
 public:
 	UCameraComponent* Camera;
+
+//Input_____
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputMappingContext* DefaultMappingContext;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* LookAction;
+	
+	void Look(const FInputActionValue& Value);
 };

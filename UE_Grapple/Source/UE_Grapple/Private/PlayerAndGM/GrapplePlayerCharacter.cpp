@@ -1,5 +1,9 @@
 ﻿
 #include "UE_Grapple/Public/PlayerAndGM/GrapplePlayerCharacter.h"
+#include "Debug.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+
 
 
 // Sets default values
@@ -16,6 +20,7 @@ void AGrapplePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	
 }
 
 // Called every frame
@@ -28,5 +33,22 @@ void AGrapplePlayerCharacter::Tick(float DeltaTime)
 void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(GetController()->GetNetOwningPlayer());
+	
+	
+	UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	InputSystem->AddMappingContext(DefaultMappingContext, InputPriority);
+
+	
+	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+
+	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
+	
+}
+
+void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
+{
+	Debug::Print(Value.Get<FVector2d>().ToString());
 }
 
