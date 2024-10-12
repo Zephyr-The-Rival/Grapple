@@ -3,7 +3,8 @@
 #include "Debug.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 
 // Sets default values
@@ -44,11 +45,32 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
+	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Move);
+	Input->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Jump);
 	
 }
 
 void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
 {
-	Debug::Print(Value.Get<FVector2d>().ToString());
+	float DeltaYaw = Value.Get<FVector2d>().X * this->TurningSpeed;
+	AddControllerYawInput(DeltaYaw);
+
+	float DeltaPitch = Value.Get<FVector2d>().Y * this->TurningSpeed;
+	FRotator Rotator = FRotator(DeltaPitch,0,0);
+	if(abs(GetMesh()->GetRelativeRotation().Pitch+DeltaPitch)<this->PitchLimit)
+		GetMesh()->AddLocalRotation(Rotator);
+	
 }
+
+void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
+{
+	FVector2d Vector2d= Value.Get<FVector2d>();
+	FVector DeltaMovement= FVector(Vector2d.X,Vector2d.Y,0);
+	FVector Forward = GetCapsuleComponent()->GetForwardVector()*Vector2d.X;
+	FVector Right = GetCapsuleComponent()->GetRightVector()*Vector2d.Y;
+	
+	GetMovementComponent()->AddInputVector(Forward+Right);
+}
+
+
 

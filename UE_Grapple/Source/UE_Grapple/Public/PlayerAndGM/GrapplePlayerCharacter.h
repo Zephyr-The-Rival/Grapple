@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GrapplePlayerCharacter.generated.h"
@@ -43,6 +44,27 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* LookAction;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* JumpAction;
+
+
+//Movement_____
+protected:
+
+	//looking
 	void Look(const FInputActionValue& Value);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float TurningSpeed=1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float PitchLimit = 70;
+
+	//moving
+	void Move(const FInputActionValue& Value);
+	
 };
