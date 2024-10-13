@@ -3,8 +3,11 @@
 #include "Debug.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+
 
 
 // Sets default values
@@ -20,7 +23,11 @@ AGrapplePlayerCharacter::AGrapplePlayerCharacter()
 void AGrapplePlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	SetDefaultValues();
+
+	if(DebugStats)
+		CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()),DebugStats)->AddToViewport(); 
 	
 }
 
@@ -47,6 +54,9 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Move);
 	Input->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Jump);
+	Input->BindAction(SprintAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartSprinting);
+	Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::StopSprinting);
+	
 	
 }
 
@@ -70,6 +80,24 @@ void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
 	FVector Right = GetCapsuleComponent()->GetRightVector()*Vector2d.Y;
 	
 	GetMovementComponent()->AddInputVector(Forward+Right);
+}
+
+void AGrapplePlayerCharacter::StartSprinting()
+{
+	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
+	CharacterMovementComponent->MaxWalkSpeed=this->SprintingSpeed;
+}
+
+void AGrapplePlayerCharacter::StopSprinting()
+{
+	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
+	CharacterMovementComponent->MaxWalkSpeed=this->WalkingSpeed;
+}
+
+void AGrapplePlayerCharacter::SetDefaultValues()
+{
+	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
+	CharacterMovementComponent->MaxWalkSpeed=this->WalkingSpeed;
 }
 
 

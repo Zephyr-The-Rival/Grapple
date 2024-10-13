@@ -51,6 +51,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* JumpAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* SprintAction;
+
 
 //Movement_____
 protected:
@@ -66,5 +69,23 @@ protected:
 
 	//moving
 	void Move(const FInputActionValue& Value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float WalkingSpeed = 300;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float SprintingSpeed = 600;
+
+	void StartSprinting();
+	void StopSprinting();
 	
+
+//Debug
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Debug");
+	TSubclassOf<UUserWidget> DebugStats;
+
+	//Other
+	void SetDefaultValues();
 };
