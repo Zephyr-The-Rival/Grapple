@@ -12,6 +12,8 @@ struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSingleEvent);
+
 UCLASS()
 class UE_GRAPPLE_API AGrapplePlayerCharacter : public ACharacter
 {
@@ -67,6 +69,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
 	float PitchLimit = 70;
 
+	//Jumping
+	void StartJump();
+	void EndJump();
+public:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FSingleEvent OnStartJump;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	FSingleEvent OnEndJump;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bJumpButtonDown=false;
+
+protected:
 	//moving
 	void Move(const FInputActionValue& Value);
 

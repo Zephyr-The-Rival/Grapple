@@ -53,7 +53,8 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Move);
-	Input->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Jump);
+	Input->BindAction(JumpAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartJump);
+	Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::EndJump);
 	Input->BindAction(SprintAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartSprinting);
 	Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::StopSprinting);
 	
@@ -70,6 +71,20 @@ void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
 	if(abs(GetMesh()->GetRelativeRotation().Pitch+DeltaPitch)<this->PitchLimit)
 		GetMesh()->AddLocalRotation(Rotator);
 	
+}
+
+void AGrapplePlayerCharacter::StartJump()
+{
+	Jump();//part of character;
+	bJumpButtonDown=true;
+	OnStartJump.Broadcast();
+}
+
+void AGrapplePlayerCharacter::EndJump()
+{
+	StopJumping();//part of character;
+	bJumpButtonDown=false;
+	OnEndJump.Broadcast();
 }
 
 void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
