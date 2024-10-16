@@ -11,6 +11,7 @@
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
+class AGrappleShooter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSingleEvent);
 
@@ -56,6 +57,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* SprintAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* ShootGrapplingHookAction;
+
 
 //Movement_____
 protected:
@@ -82,7 +86,7 @@ public:
 	bool bJumpButtonDown=false;
 
 protected:
-	//moving
+	//walking
 	void Move(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
@@ -95,6 +99,19 @@ protected:
 	void StopSprinting();
 	
 
+//Grappling_____
+protected:
+	void ShootGrapplePressed();
+	void ShootGrappleEnd();
+	
+	UPROPERTY(EditDefaultsOnly)
+	UChildActorComponent* GrappleShooterChildActor;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	AGrappleShooter* MyGrappleShooter;
+
+	
 //Debug
 protected:
 
@@ -103,4 +120,8 @@ protected:
 
 	//Other
 	void SetDefaultValues();
+
+
+	
+	
 };

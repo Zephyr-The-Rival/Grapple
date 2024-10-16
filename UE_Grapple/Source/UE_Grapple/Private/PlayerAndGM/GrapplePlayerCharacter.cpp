@@ -1,10 +1,12 @@
 ﻿
+#include "GrappleShooter/GrappleShooter.h"
 #include "UE_Grapple/Public/PlayerAndGM/GrapplePlayerCharacter.h"
 #include "Debug.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
+#include "Evaluation/Blending/MovieSceneBlendType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 
@@ -17,6 +19,9 @@ AGrapplePlayerCharacter::AGrapplePlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	this->Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(this->GetMesh(), TEXT("CameraSocket"));
+
+	this->GrappleShooterChildActor= CreateDefaultSubobject<UChildActorComponent>("GrappleShooterChildActor");
+	this->GrappleShooterChildActor->SetupAttachment(this->GetMesh(),TEXT("lowerarm_l"));
 }
 
 // Called when the game starts or when spawned
@@ -26,8 +31,8 @@ void AGrapplePlayerCharacter::BeginPlay()
 
 	SetDefaultValues();
 
-	if(DebugStats)
-		CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()),DebugStats)->AddToViewport(); 
+	//if(DebugStats)
+	//	CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()),DebugStats)->AddToViewport(); 
 	
 }
 
@@ -53,11 +58,15 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Move);
+	
 	Input->BindAction(JumpAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartJump);
 	Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::EndJump);
+	
 	Input->BindAction(SprintAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartSprinting);
 	Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::StopSprinting);
-	
+
+	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::ShootGrapplePressed);
+	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::ShootGrappleEnd);
 	
 }
 
@@ -109,10 +118,50 @@ void AGrapplePlayerCharacter::StopSprinting()
 	CharacterMovementComponent->MaxWalkSpeed=this->WalkingSpeed;
 }
 
+void AGrapplePlayerCharacter::ShootGrapplePressed()
+{
+	if(!IsValid(MyGrappleShooter))
+		return;
+
+	if(MyGrappleShooter->State!=EGrappleState::Standby)
+		return;
+
+	FHitResult HitResult;
+
+	FVector Start= Camera->GetComponentLocation();
+	FVector End= Start+ Camera->GetForwardVector()*MyGrappleShooter->Range;
+
+	GetWorld()->LineTraceSingleByChannel(HitResult,Start, End, ECC_Visibility);
+
+	FVector HitLocation;
+	if(HitResult.bBlockingHit)
+	{
+		Debug::Print("Grapple Trace  hit:"+ HitResult.GetActor()->GetName()+" at: "+ HitResult.Location.ToString());
+		HitLocation= HitResult.Location;
+	}
+	else
+	{
+		HitLocation=End;
+	}
+	
+
+	MyGrappleShooter->Shoot(HitLocation);
+}
+
+void AGrapplePlayerCharacter::ShootGrappleEnd()
+{
+	if(!IsValid(MyGrappleShooter))
+		return;
+	
+	MyGrappleShooter->LetGo();
+}
+
 void AGrapplePlayerCharacter::SetDefaultValues()
 {
 	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
 	CharacterMovementComponent->MaxWalkSpeed=this->WalkingSpeed;
+
+	this->MyGrappleShooter= Cast<AGrappleShooter>(GrappleShooterChildActor->GetChildActor());
 }
 
 
