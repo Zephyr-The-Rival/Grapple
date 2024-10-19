@@ -37,6 +37,7 @@ public:
 
 //Components_____
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UCameraComponent* Camera;
 
 //Input_____
@@ -121,7 +122,10 @@ protected:
 	//Other
 	void SetDefaultValues();
 
+//UserInterface/UI
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="HUD");
+	TSubclassOf<UUserWidget> MainHud;
 	
 	
 };

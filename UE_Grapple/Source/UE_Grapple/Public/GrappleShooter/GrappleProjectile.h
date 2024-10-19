@@ -25,17 +25,21 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-protected:
+public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UMeshComponent* Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* Mesh;
+
+protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float ProjectileSpeed=500;
+	float ProjectileSpeed=3000;
 
 private:
-	bool Move=false;
+	bool Move=true;
 
 public:
+	void StopMove();
 	Event OnHit;
+
 };

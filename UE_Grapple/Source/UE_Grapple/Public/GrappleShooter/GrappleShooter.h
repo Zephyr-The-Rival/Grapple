@@ -7,6 +7,10 @@
 #include "GrappleShooter.generated.h"
 
 
+class UCableComponent;
+class UCameraComponent;
+class AGrappleProjectile;
+
 UENUM(BlueprintType)
 enum class EGrappleState :uint8
 {
@@ -37,7 +41,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void Shoot(FVector HitCoordinate);
+	UFUNCTION(BlueprintCallable)
+	void SpawnProjectile(UCameraComponent* PlayerCamera);
+
+	UFUNCTION()
+	void StartPulling();
+	
 	void LetGo();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -48,8 +57,27 @@ public:
 protected:
 	AGrapplePlayerCharacter* MyCharacter;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<AGrappleProjectile> BpProjectileClass;
+
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float Range= 3000;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float PullStrenght= 10000;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float DetachDistanceThreshold= 150;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float ReelInSpeed= 5000;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UCableComponent* CableComponent;
+
 	
+private:
+	AGrappleProjectile* CurrentProjectile;
 };

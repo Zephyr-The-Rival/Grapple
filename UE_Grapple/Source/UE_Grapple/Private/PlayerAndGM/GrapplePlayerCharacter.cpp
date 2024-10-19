@@ -1,5 +1,5 @@
 ﻿
-#include "GrappleShooter/GrappleShooter.h"
+
 #include "UE_Grapple/Public/PlayerAndGM/GrapplePlayerCharacter.h"
 #include "Debug.h"
 #include "EnhancedInputComponent.h"
@@ -9,7 +9,8 @@
 #include "Evaluation/Blending/MovieSceneBlendType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
-
+#include "GrappleShooter/GrappleShooter.h"
+#include "PlayerAndGM/GrapplePC.h"
 
 
 // Sets default values
@@ -31,8 +32,11 @@ void AGrapplePlayerCharacter::BeginPlay()
 
 	SetDefaultValues();
 
-	//if(DebugStats)
-	//	CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()),DebugStats)->AddToViewport(); 
+	if(MainHud)
+		CreateWidget<UUserWidget>(Cast<AGrapplePC>(GetController()),MainHud)->AddToViewport(0);
+	if(DebugStats)
+		CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()),DebugStats)->AddToViewport(1);
+	
 	
 }
 
@@ -126,26 +130,8 @@ void AGrapplePlayerCharacter::ShootGrapplePressed()
 	if(MyGrappleShooter->State!=EGrappleState::Standby)
 		return;
 
-	FHitResult HitResult;
-
-	FVector Start= Camera->GetComponentLocation();
-	FVector End= Start+ Camera->GetForwardVector()*MyGrappleShooter->Range;
-
-	GetWorld()->LineTraceSingleByChannel(HitResult,Start, End, ECC_Visibility);
-
-	FVector HitLocation;
-	if(HitResult.bBlockingHit)
-	{
-		Debug::Print("Grapple Trace  hit:"+ HitResult.GetActor()->GetName()+" at: "+ HitResult.Location.ToString());
-		HitLocation= HitResult.Location;
-	}
-	else
-	{
-		HitLocation=End;
-	}
+	MyGrappleShooter->State=EGrappleState::ShootingOut;//will trigger the animatoin that will shoot the projectile
 	
-
-	MyGrappleShooter->Shoot(HitLocation);
 }
 
 void AGrapplePlayerCharacter::ShootGrappleEnd()

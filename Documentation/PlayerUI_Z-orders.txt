@@ -1,1 +1,3 @@
-0 debug stats
+0 MainHud in PlayerCharacter::BeginPlay()
+
+1 debug stats in PlayerCharacter::BeginPlay()
