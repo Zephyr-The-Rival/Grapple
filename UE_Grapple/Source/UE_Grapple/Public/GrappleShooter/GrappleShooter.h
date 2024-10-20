@@ -17,7 +17,9 @@ enum class EGrappleState :uint8
 	Standby UMETA(DisplayName= "Standby"),
 	ShootingOut UMETA(DisplayName= "Shooting out"),
 	Pulling UMETA(DisplayName= "Pulling"),
-	ReelingIn UMETA(DisplayName= "Reeling In")
+	ReelingIn UMETA(DisplayName= "Reeling In"),
+	CoolDown UMETA(DisplayName="Cool down"),
+	SoftCoolDown UMETA(DisplayName="Soft cool down")
 };
 
 
@@ -69,9 +71,17 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float DetachDistanceThreshold= 150;
+	
+	//max time to reel in the hook in seconds
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MaxReelInTime= 2;
+
+	//minimum distance for max reel in time in cm
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MaxReelInTimeDistance= 5000;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float ReelInSpeed= 5000;
+	float CoolDownTime =1;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -79,5 +89,24 @@ protected:
 
 	
 private:
+	UPROPERTY(EditAnywhere, BlueprintGetter=GetCurrentProjectile)
 	AGrappleProjectile* CurrentProjectile;
+public:
+	UFUNCTION(BlueprintCallable)
+	AGrappleProjectile* GetCurrentProjectile() const {return this->CurrentProjectile;}
+private:
+
+	float ReelingInSecondsSum=0;
+	FVector InitalProjectileReelInPosition;
+	float ReelInTime=0;
+	void StartCoolDown();
+	float CoolDownTimeCounter=0;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void StartSoftCooldown();
+
+	UFUNCTION(BlueprintCallable)
+	void SoftCooldownOver();
+	
 };

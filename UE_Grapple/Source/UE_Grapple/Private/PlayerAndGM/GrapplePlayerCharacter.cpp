@@ -127,7 +127,7 @@ void AGrapplePlayerCharacter::ShootGrapplePressed()
 	if(!IsValid(MyGrappleShooter))
 		return;
 
-	if(MyGrappleShooter->State!=EGrappleState::Standby)
+	if(!(MyGrappleShooter->State==EGrappleState::Standby || MyGrappleShooter->State==EGrappleState::SoftCoolDown))
 		return;
 
 	MyGrappleShooter->State=EGrappleState::ShootingOut;//will trigger the animatoin that will shoot the projectile

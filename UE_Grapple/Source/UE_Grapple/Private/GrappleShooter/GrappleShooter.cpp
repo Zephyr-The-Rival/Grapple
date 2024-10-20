@@ -72,28 +72,40 @@ void AGrappleShooter::Tick(float DeltaTime)
 		
 	}
 	if(this->State==EGrappleState::ReelingIn)
-	{
+	{	
+		float LerpAlpha=0;
+		this->ReelingInSecondsSum+=DeltaTime;
+
+		LerpAlpha= ReelingInSecondsSum/ReelInTime;
+		if(LerpAlpha>=1)
+			LerpAlpha=1;
+		
+		CurrentProjectile->SetActorLocation(FMath::Lerp(InitalProjectileReelInPosition, this->GetActorLocation(),LerpAlpha));
+		
+
 		float currentDistance = FVector::Distance(this->GetActorLocation(), CurrentProjectile->GetActorLocation());
-		if (currentDistance < 150)//|| currentDistance > lastDistance)
+		if (currentDistance < 10)//|| currentDistance > lastDistance)
 		{
-			this->CableComponent->SetHiddenInGame(true);
-			CurrentProjectile->Destroy();
-			this->State = EGrappleState::Standby;
-		}
-		else
-		{
-			FVector direction = this->GetActorLocation() - CurrentProjectile->GetActorLocation();
-			direction.Normalize();
-			CurrentProjectile->AddActorWorldOffset(direction * this->ReelInSpeed * DeltaTime);
+			StartCoolDown();
 		}
 		
+	}
+	if(State==EGrappleState::CoolDown)
+	{
+		this->CoolDownTimeCounter+=DeltaTime;
+		if(this->CoolDownTimeCounter>=this->CoolDownTime)
+		{
+			State=EGrappleState::Standby;
+		}
 	}
 	
 }
 
 void AGrappleShooter::SpawnProjectile(UCameraComponent* PlayerCamera)
 {
-
+	if(this->State!=EGrappleState::ShootingOut)//to make sure because animation blending can cause this to be triggered during a different state
+		return;
+	
 	FHitResult HitResult;
 
 	FVector Start= PlayerCamera->GetComponentLocation();
@@ -107,7 +119,6 @@ void AGrappleShooter::SpawnProjectile(UCameraComponent* PlayerCamera)
 	
 	if(HitResult.bBlockingHit)
 	{
-		Debug::Print("Grapple Trace  hit:"+ UKismetSystemLibrary::GetDisplayName(HitResult.GetActor())+" at: "+ HitResult.Location.ToString());
 		SpawnRotation= (HitResult.Location-SpawnLocation).Rotation();
 	}
 	else
@@ -133,12 +144,41 @@ void AGrappleShooter::LetGo()
 		return;
 
 	if(!CurrentProjectile)
+	{
+		this->State=EGrappleState::SoftCoolDown;
 		return;
+	}
+		
 
 	FDetachmentTransformRules DetachmentRules=FDetachmentTransformRules(EDetachmentRule::KeepWorld,EDetachmentRule::KeepWorld,EDetachmentRule::KeepWorld,false);
 	CurrentProjectile->DetachFromActor(DetachmentRules);
 	CurrentProjectile->StopMove();
+
+	this->ReelingInSecondsSum=0;
+	InitalProjectileReelInPosition= CurrentProjectile->GetActorLocation();
+
+	float ReelInTimeAlpha= FVector::Distance(this->GetActorLocation(),CurrentProjectile->GetActorLocation())/MaxReelInTimeDistance;
+	this->ReelInTime=FMath::Lerp(0,MaxReelInTime,ReelInTimeAlpha); //is used on tick while reeling in
 	
 	State=EGrappleState::ReelingIn;
+}
+
+void AGrappleShooter::StartCoolDown()
+{
+	this->CableComponent->SetHiddenInGame(true);
+	CurrentProjectile->Destroy();
+	CurrentProjectile=nullptr;//destroy doesnt seem to be enough
+	this->CoolDownTimeCounter=0;
+	this->State = EGrappleState::CoolDown;
+}
+
+void AGrappleShooter::StartSoftCooldown()
+{
+	this->State=EGrappleState::SoftCoolDown;
+}
+
+void AGrappleShooter::SoftCooldownOver()
+{
+	this->State=EGrappleState::Standby;
 }
 
