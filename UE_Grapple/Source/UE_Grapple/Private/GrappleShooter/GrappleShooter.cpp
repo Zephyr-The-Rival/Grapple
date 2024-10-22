@@ -65,8 +65,8 @@ void AGrappleShooter::Tick(float DeltaTime)
 		{
 			FVector Force = CurrentProjectile->GetActorLocation()-MyCharacter->GetActorLocation();
 			Force.Normalize();
-			Force= Force*this->PullStrenght*DeltaTime;
-			MyCharacter->GetCharacterMovement()->AddForce(Force);
+			Force= Force*this->PullStrenght;
+			MyCharacter->GetCharacterMovement()->AddForce(Force);//deltatime is adjusted for already
 			
 		}
 		

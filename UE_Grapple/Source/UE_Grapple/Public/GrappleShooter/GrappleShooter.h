@@ -67,7 +67,7 @@ public:
 	float Range= 3000;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float PullStrenght= 10000;
+	float PullStrenght= 500000;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float DetachDistanceThreshold= 150;

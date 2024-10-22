@@ -15,6 +15,7 @@ class AGrappleShooter;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSingleEvent);
 
+
 UCLASS()
 class UE_GRAPPLE_API AGrapplePlayerCharacter : public ACharacter
 {
@@ -44,7 +45,10 @@ public:
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputMappingContext* DefaultMappingContext;
+	UInputMappingContext* DefaultMappingContext_MaK;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputMappingContext* DefaultMappingContext_GamePad;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* LookAction;
@@ -68,14 +72,14 @@ protected:
 	//looking
 	void Look(const FInputActionValue& Value);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Looking")
 	float TurningSpeed=1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Looking")
 	float PitchLimit = 70;
 
 	//Jumping
-	void StartJump();
+	void JumpButtonDown();
 	void EndJump();
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
@@ -83,21 +87,60 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	FSingleEvent OnEndJump;
 
+	//for animation blueprint
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bJumpButtonDown=false;
+	bool bJumping=false;
 
 protected:
 	//walking
 	void Move(const FInputActionValue& Value);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Walking")
 	float WalkingSpeed = 300;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Walking")
 	float SprintingSpeed = 600;
 
+private:
+	bool bIsSprinting=false;
+	void SprintButtonDown();
+	void SprintButtonUp();
 	void StartSprinting();
 	void StopSprinting();
+
+	//Boosting
+
+protected:
+	//Amount of seconds where boosting is possible
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement/Boosting")
+	float MaxBoostingFuel=1;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement/Boosting")
+	float BoostingStrenght=15000;
+
+	//How fast boosting refuels per second
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement/Boosting")
+	float BoostingRefuelSpeed=0.3;
+
+	//How long until boost starts refueling
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Movement/Boosting")
+	float BoostingRefuelDelay=2;
+	
+private:
+	bool bIsBoosting=false;
+	float BoostingFuel=0;
+	bool bRefuelBoostAllowed=true;
+	
+
+	void StartBoosting();
+	void StopBoosting();
+	void TickApplyBoost();
+	void TickRefuelBoost();
+
+	void AllowBoostRefill();
+	
+	FTimerHandle BoostRefuelTimer;
+
 	
 
 //Grappling_____

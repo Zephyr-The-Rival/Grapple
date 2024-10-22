@@ -44,6 +44,15 @@ void AGrapplePlayerCharacter::BeginPlay()
 void AGrapplePlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(this->bIsBoosting)
+		TickApplyBoost();
+
+	if(this->bRefuelBoostAllowed)
+		TickRefuelBoost();
+
+	Debug::Print("BoostingFuel: "+FString::SanitizeFloat(this->BoostingFuel),DeltaTime);
+		
 }
 
 // Called to bind functionality to input
@@ -55,7 +64,8 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	
 	
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	InputSystem->AddMappingContext(DefaultMappingContext, InputPriority);
+	InputSystem->AddMappingContext(DefaultMappingContext_MaK, InputPriority);
+	InputSystem->AddMappingContext(DefaultMappingContext_GamePad, InputPriority);
 
 	
 	UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent);
@@ -63,11 +73,11 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Move);
 	
-	Input->BindAction(JumpAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartJump);
+	Input->BindAction(JumpAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::JumpButtonDown);
 	Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::EndJump);
 	
-	Input->BindAction(SprintAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::StartSprinting);
-	Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::StopSprinting);
+	Input->BindAction(SprintAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::SprintButtonDown);
+	Input->BindAction(SprintAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::SprintButtonUp);
 
 	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::ShootGrapplePressed);
 	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::ShootGrappleEnd);
@@ -86,23 +96,44 @@ void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
 	
 }
 
-void AGrapplePlayerCharacter::StartJump()
+void AGrapplePlayerCharacter::JumpButtonDown()
 {
-	Jump();//part of character;
-	bJumpButtonDown=true;
-	OnStartJump.Broadcast();
+	if(GetMovementComponent()->IsFalling())
+	{
+		StartBoosting();
+	}
+	else
+	{
+		Jump();//part of character;
+		OnStartJump.Broadcast();
+		this->bJumping=true;
+	}
+	
 }
 
 void AGrapplePlayerCharacter::EndJump()
 {
-	StopJumping();//part of character;
-	bJumpButtonDown=false;
-	OnEndJump.Broadcast();
+	if(bIsBoosting)
+	{
+		StopBoosting();
+	}
+	else
+	{
+		StopJumping();//part of character;
+		OnEndJump.Broadcast();
+		this->bJumping=false;
+	}
 }
 
 void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2d Vector2d= Value.Get<FVector2d>();
+
+	if(Vector2d.X<0.5)
+	{
+		StopSprinting();
+	}
+	
 	FVector DeltaMovement= FVector(Vector2d.X,Vector2d.Y,0);
 	FVector Forward = GetCapsuleComponent()->GetForwardVector()*Vector2d.X;
 	FVector Right = GetCapsuleComponent()->GetRightVector()*Vector2d.Y;
@@ -110,16 +141,87 @@ void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
 	GetMovementComponent()->AddInputVector(Forward+Right);
 }
 
+void AGrapplePlayerCharacter::SprintButtonDown()
+{
+	AGrapplePC* PlayerController= Cast<AGrapplePC>(GetController());
+	if(PlayerController->bIsUsingGamepad)
+	{
+		if(this->bIsSprinting)
+			StopSprinting();
+		else
+			StartSprinting();
+		
+	}
+	else
+	{
+		StartSprinting();
+	}
+}
+
+void AGrapplePlayerCharacter::SprintButtonUp()
+{
+	AGrapplePC* PlayerController= Cast<AGrapplePC>(GetController());
+	if(!PlayerController->bIsUsingGamepad)
+		StopSprinting();
+	
+}
+
 void AGrapplePlayerCharacter::StartSprinting()
 {
+	this->bIsSprinting=true;
 	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
 	CharacterMovementComponent->MaxWalkSpeed=this->SprintingSpeed;
 }
 
 void AGrapplePlayerCharacter::StopSprinting()
 {
+	this->bIsSprinting=false;
 	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
 	CharacterMovementComponent->MaxWalkSpeed=this->WalkingSpeed;
+}
+
+void AGrapplePlayerCharacter::StartBoosting()
+{
+	this->bIsBoosting=true;
+	this->bRefuelBoostAllowed=false;
+	GetWorld()->GetTimerManager().PauseTimer(BoostRefuelTimer);
+}
+
+void AGrapplePlayerCharacter::StopBoosting()
+{
+	this->bIsBoosting=false;
+	GetWorld()->GetTimerManager().SetTimer(BoostRefuelTimer,this,&AGrapplePlayerCharacter::AllowBoostRefill,BoostingRefuelDelay,false);
+}
+
+void AGrapplePlayerCharacter::TickApplyBoost()
+{
+	UCharacterMovementComponent* CharacterMovementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
+
+	if(BoostingFuel>0)
+	{
+		BoostingFuel-=GetWorld()->DeltaTimeSeconds;
+		CharacterMovementComponent->AddForce(FVector(0,0,this->BoostingStrenght));//deltatime is adjusted for already
+	}
+	else
+	{
+		StopBoosting();
+	}
+}
+
+void AGrapplePlayerCharacter::TickRefuelBoost()
+{
+	if(BoostingFuel==MaxBoostingFuel)
+		return;
+	
+	if(BoostingFuel<MaxBoostingFuel)
+		this->BoostingFuel+=GetWorld()->DeltaTimeSeconds*this->BoostingRefuelSpeed;
+	else
+		BoostingFuel=MaxBoostingFuel;
+}
+
+void AGrapplePlayerCharacter::AllowBoostRefill()
+{
+	this->bRefuelBoostAllowed=true;
 }
 
 void AGrapplePlayerCharacter::ShootGrapplePressed()
@@ -148,6 +250,7 @@ void AGrapplePlayerCharacter::SetDefaultValues()
 	CharacterMovementComponent->MaxWalkSpeed=this->WalkingSpeed;
 
 	this->MyGrappleShooter= Cast<AGrappleShooter>(GrappleShooterChildActor->GetChildActor());
+	this->BoostingFuel=this->MaxBoostingFuel;
 }
 
 
