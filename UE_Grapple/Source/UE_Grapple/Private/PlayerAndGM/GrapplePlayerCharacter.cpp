@@ -235,8 +235,7 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 
 	if(HitResultRight.bBlockingHit)
 	{
-		float dot = HitResultRight.Normal.Dot(this->GetActorRightVector());
-		Debug::Print("Hitting stuff on the right dot: "+ FString::SanitizeFloat(dot),GetWorld()->DeltaTimeSeconds);
+		Debug::Print("Hitting stuff on the right dot: ");
 	}
 
 	FHitResult HitResultLeft;
