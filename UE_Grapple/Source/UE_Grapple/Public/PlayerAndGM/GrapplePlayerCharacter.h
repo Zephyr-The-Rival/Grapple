@@ -13,6 +13,14 @@ class UInputAction;
 class UInputMappingContext;
 class AGrappleShooter;
 
+// struct FMovementDirecions
+// {
+// 	bool bForward=false;
+// 	bool bBackward=false;
+// 	bool bRight=false;
+// 	bool bLeft=false;
+// };
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSingleEvent);
 
 
@@ -69,6 +77,9 @@ protected:
 //Movement_____
 protected:
 
+	UCharacterMovementComponent* CharacterMovementComponent;
+
+	//FMovementDirecions CurrentMovementDirection;
 	//looking
 	void Look(const FInputActionValue& Value);
 	
@@ -134,13 +145,22 @@ private:
 
 	void StartBoosting();
 	void StopBoosting();
-	void TickApplyBoost();
-	void TickRefuelBoost();
+	void Tick_ApplyBoost();
+	void Tick_RefuelBoost();
 
 	void AllowBoostRefill();
 	
 	FTimerHandle BoostRefuelTimer;
 
+	//WallRunning
+private:
+	void Tick_WallrunCheck();
+
+protected:
+	//How close to the wall the player must be to start the wallrun
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float WallrunCheckDistance= 60;
+	
 	
 
 //Grappling_____
