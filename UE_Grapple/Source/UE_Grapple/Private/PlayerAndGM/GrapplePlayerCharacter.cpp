@@ -129,10 +129,10 @@ void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
 
 	GetMovementComponent()->AddInputVector(Forward + Right);
 
-	// this->CurrentMovementDirection.bForward=();
-	// this->CurrentMovementDirection.bBackward=(Vector2d.X<-0.5);
-	// this->CurrentMovementDirection.bRight=(Vector2d.Y>0.5);
-	// this->CurrentMovementDirection.bLeft=(Vector2d.Y<-0.5);
+	 this->CurrentMovementDirection.bForward=(Vector2d.X>0.5);
+	 this->CurrentMovementDirection.bBackward=(Vector2d.X<-0.5);
+	 this->CurrentMovementDirection.bRight=(Vector2d.Y>0.5);
+	 this->CurrentMovementDirection.bLeft=(Vector2d.Y<-0.5);
 
 	if (Vector2d.X<0.5)
 	{
@@ -186,8 +186,7 @@ void AGrapplePlayerCharacter::StartBoosting()
 void AGrapplePlayerCharacter::StopBoosting()
 {
 	this->bIsBoosting = false;
-	GetWorld()->GetTimerManager().SetTimer(BoostRefuelTimer, this, &AGrapplePlayerCharacter::AllowBoostRefill,
-	                                       BoostingRefuelDelay, false);
+	GetWorld()->GetTimerManager().SetTimer(BoostRefuelTimer, this, &AGrapplePlayerCharacter::AllowBoostRefill,BoostingRefuelDelay, false);
 }
 
 void AGrapplePlayerCharacter::Tick_ApplyBoost()
@@ -233,9 +232,11 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 	
 	GetWorld()->LineTraceSingleByChannel(HitResultRight,Start,End,ECC_GameTraceChannel1);
 
-	if(HitResultRight.bBlockingHit)
+
+	float dot=GetActorForwardVector().Dot(HitResultRight.Normal);
+	if(HitResultRight.bBlockingHit&& dot< -0.1f && dot >-0.8f && CurrentMovementDirection.bForward)
 	{
-		Debug::Print("Hitting stuff on the right dot: ");
+		Debug::Print("Hitting stuff on the right dot: "+FString::SanitizeFloat(dot));
 	}
 
 	FHitResult HitResultLeft;

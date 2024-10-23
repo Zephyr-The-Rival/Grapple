@@ -13,13 +13,13 @@ class UInputAction;
 class UInputMappingContext;
 class AGrappleShooter;
 
-// struct FMovementDirecions
-// {
-// 	bool bForward=false;
-// 	bool bBackward=false;
-// 	bool bRight=false;
-// 	bool bLeft=false;
-// };
+struct FMovementDirecions
+{
+	bool bForward = false;
+	bool bBackward = false;
+	bool bRight = false;
+	bool bLeft = false;
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSingleEvent);
 
@@ -79,7 +79,7 @@ protected:
 
 	UCharacterMovementComponent* CharacterMovementComponent;
 
-	//FMovementDirecions CurrentMovementDirection;
+	FMovementDirecions CurrentMovementDirection;
 	//looking
 	void Look(const FInputActionValue& Value);
 	
