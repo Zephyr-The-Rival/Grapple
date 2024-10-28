@@ -8,6 +8,7 @@
 
 //UInputAction;
 
+class UGrappleMovementComponent;
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
@@ -21,6 +22,8 @@ struct FMovementDirecions
 	bool bLeft = false;
 };
 
+
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSingleEvent);
 
 
@@ -31,7 +34,7 @@ class UE_GRAPPLE_API AGrapplePlayerCharacter : public ACharacter
 
 public:
 	// Sets default values for this character's properties
-	AGrapplePlayerCharacter();
+	AGrapplePlayerCharacter(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned
@@ -76,10 +79,10 @@ protected:
 
 //Movement_____
 protected:
-
-	UCharacterMovementComponent* CharacterMovementComponent;
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Movement")
+	class UGrappleMovementComponent* CharacterMovementComponent;
 	FMovementDirecions CurrentMovementDirection;
+	
 	//looking
 	void Look(const FInputActionValue& Value);
 	
@@ -108,7 +111,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Walking")
 	float WalkingSpeed = 300;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Walking")
 	float SprintingSpeed = 600;
 
@@ -156,7 +159,7 @@ private:
 private:
 	void Tick_WallrunCheck();
 
-protected:
+public:
 	//How close to the wall the player must be to start the wallrun
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float WallrunCheckDistance= 60;

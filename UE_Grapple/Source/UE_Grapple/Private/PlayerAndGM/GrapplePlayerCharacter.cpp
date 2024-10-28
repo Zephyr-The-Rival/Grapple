@@ -4,16 +4,18 @@
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CapsuleComponent.h"
-#include "Evaluation/Blending/MovieSceneBlendType.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GrappleShooter/GrappleShooter.h"
+#include "PlayerAndGM/GrappleMovementComponent.h"
 #include "PlayerAndGM/GrapplePC.h"
 
 
 // Sets default values
-AGrapplePlayerCharacter::AGrapplePlayerCharacter()
+AGrapplePlayerCharacter::AGrapplePlayerCharacter(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer.SetDefaultSubobjectClass<UGrappleMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
+	this->CharacterMovementComponent= Cast<UGrappleMovementComponent>(GetMovementComponent());
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	this->Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -22,7 +24,7 @@ AGrapplePlayerCharacter::AGrapplePlayerCharacter()
 	this->GrappleShooterChildActor = CreateDefaultSubobject<UChildActorComponent>("GrappleShooterChildActor");
 	this->GrappleShooterChildActor->SetupAttachment(this->GetMesh(),TEXT("lowerarm_l"));
 
-	this->CharacterMovementComponent= Cast<UCharacterMovementComponent>(GetMovementComponent());
+	
 }
 
 // Called when the game starts or when spawned
@@ -49,7 +51,8 @@ void AGrapplePlayerCharacter::Tick(float DeltaTime)
 	if (this->bRefuelBoostAllowed)
 		Tick_RefuelBoost();
 
-	Tick_WallrunCheck();
+	if(CharacterMovementComponent->MovementMode!=ECustomMovementMode::CMOVE_WallRun)
+		Tick_WallrunCheck();
 }
 
 // Called to bind functionality to input
@@ -79,6 +82,7 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Started, this,&AGrapplePlayerCharacter::ShootGrapplePressed);
 	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Completed, this,&AGrapplePlayerCharacter::ShootGrappleEnd);
 }
+
 
 void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
 {
@@ -234,9 +238,10 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 
 
 	float dot=GetActorForwardVector().Dot(HitResultRight.Normal);
-	if(HitResultRight.bBlockingHit&& dot< -0.1f && dot >-0.8f && CurrentMovementDirection.bForward)
+	if (HitResultRight.bBlockingHit && dot < -0.1f && dot > -0.8f && CurrentMovementDirection.bForward)
 	{
-		Debug::Print("Hitting stuff on the right dot: "+FString::SanitizeFloat(dot));
+		Debug::Print("Hitting stuff on the right: "+FString::SanitizeFloat(dot), GetWorld()->GetDeltaSeconds());
+		CharacterMovementComponent->StartWallrun(true);
 	}
 
 	FHitResult HitResultLeft;
@@ -245,9 +250,11 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 	
 	GetWorld()->LineTraceSingleByChannel(HitResultLeft,Start,End,ECC_GameTraceChannel1);
 
-	if(HitResultLeft.bBlockingHit)
+	dot=GetActorForwardVector().Dot(HitResultLeft.Normal);
+	if(HitResultLeft.bBlockingHit && dot< -0.1f && dot >-0.8f && CurrentMovementDirection.bForward)
 	{
-		Debug::Print("Hitting stuff on the Left: ", GetWorld()->DeltaTimeSeconds);
+		Debug::Print("Hitting stuff on the Left: "+FString::SanitizeFloat(dot), GetWorld()->DeltaTimeSeconds);
+		CharacterMovementComponent->StartWallrun(false);
 	}
 }
 
