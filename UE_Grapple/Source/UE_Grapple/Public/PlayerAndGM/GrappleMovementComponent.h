@@ -62,7 +62,7 @@ public:
 	//CustomParameters
 
 	//wallrun time in seconds
-	UPROPERTY(EditDefaultsOnly) float WallrunMaxTime=3;
+	UPROPERTY(EditDefaultsOnly) float WallrunGravity=300;
 	
 	UPROPERTY(EditDefaultsOnly) float WallrunMinSpeed=600;
 };

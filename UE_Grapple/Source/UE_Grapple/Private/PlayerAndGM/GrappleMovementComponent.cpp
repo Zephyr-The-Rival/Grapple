@@ -75,37 +75,67 @@ void UGrappleMovementComponent::StartWallrun(bool bRightSide)
 
 void UGrappleMovementComponent::PhysWallrun(float deltaTime, int32 Iterations)
 {
-	if(deltaTime< MIN_TICK_TIME)
+	if (deltaTime < MIN_TICK_TIME)
 		return;
 	
 	RestorePreAdditiveRootMotionVelocity();
 
 	FHitResult HitResult =WallrunLineTrace(bWallrunRight); 
-	if(!HitResult.bBlockingHit)
+
+	if(!HitResult.bBlockingHit || Velocity.Length()<300)
+	{
 		EndWallrun();
+		StartNewPhysics(deltaTime,Iterations);
+		return;
+	}
+		
 
 	float vectorRotation;
 	if(bWallrunRight)
 		vectorRotation=90;
 	else
 		vectorRotation=-90;
+
+
+	//Velocity+=FVector::DownVector*deltaTime*WallrunGravity;//applyGravity
 	
-	FVector RunDirection = HitResult.Normal.RotateAngleAxis(vectorRotation,FVector(0,0,1));
+
 	
-	Velocity = RunDirection*WallrunMinSpeed*deltaTime;
-	
-	//if(Velocity.Length()<WallrunMinSpeed)
-		
-	
+	if (!HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
+	{
+		CalcVelocity(deltaTime, 0.1, false, GetMaxBrakingDeceleration());//apparently friction only in fluid??
+	}
+	ApplyRootMotionToVelocity(deltaTime);
+
+
+
+
 	FQuat AbsoluteRotation =FQuat::MakeFromRotator(MyGrapplePlayerCharacter->GetActorRotation());
 	
 	Iterations++;
 	bJustTeleported=false;
 	FHitResult SweepHit= FHitResult();
-	SafeMoveUpdatedComponent(Velocity, AbsoluteRotation, true,SweepHit);
+
+	FVector OldLocation=UpdatedComponent->GetComponentLocation();
 	
-	// if(SweepHit.bBlockingHit)
-	// 	HandleImpact(SweepHit, deltaTime, DeltaPosition);
+	Velocity = HitResult.Normal.RotateAngleAxis(vectorRotation,FVector(0,0,1));
+	FVector DeltaPosition = Velocity*WallrunMinSpeed*deltaTime;
+	
+
+	
+	SafeMoveUpdatedComponent(DeltaPosition, AbsoluteRotation, true,SweepHit);
+	
+	
+	 if(SweepHit.bBlockingHit)
+	 {
+		 HandleImpact(SweepHit,1-SweepHit.Time,DeltaPosition);
+		 EndWallrun();
+	 }
+
+	if(!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
+	{
+		Velocity= (UpdatedComponent->GetComponentLocation()-OldLocation)/deltaTime;
+	}
 }
 
 FHitResult UGrappleMovementComponent::WallrunLineTrace(bool bRight)
