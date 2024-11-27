@@ -97,6 +97,11 @@ void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
 
 void AGrapplePlayerCharacter::JumpButtonDown()
 {
+	if (CharacterMovementComponent->MovementMode == MOVE_Custom && CharacterMovementComponent->CustomMovementMode == ECustomMovementMode::CMOVE_WallRun)
+	{
+		CharacterMovementComponent->JumpOffWall();
+		return;
+	}
 	if (GetMovementComponent()->IsFalling())
 	{
 		StartBoosting();
@@ -126,22 +131,32 @@ void AGrapplePlayerCharacter::EndJump()
 void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2d Vector2d = Value.Get<FVector2d>();
-	
-	FVector DeltaMovement = FVector(Vector2d.X, Vector2d.Y, 0);
-	FVector Forward = GetCapsuleComponent()->GetForwardVector() * Vector2d.X;
-	FVector Right = GetCapsuleComponent()->GetRightVector() * Vector2d.Y;
 
-	GetMovementComponent()->AddInputVector(Forward + Right);
+	if(this->CharacterMovementComponent->MovementMode==MOVE_Walking)
+	{
+		FVector DeltaMovement = FVector(Vector2d.X, Vector2d.Y, 0);
+		FVector Forward = GetCapsuleComponent()->GetForwardVector() * Vector2d.X;
+		FVector Right = GetCapsuleComponent()->GetRightVector() * Vector2d.Y;
+
+		GetMovementComponent()->AddInputVector(Forward + Right);
+
+		if (Vector2d.X<0.5)
+		{
+			StopSprinting();
+		}
+	}
+	if (CharacterMovementComponent->MovementMode == MOVE_Custom && CharacterMovementComponent->CustomMovementMode == ECustomMovementMode::CMOVE_WallRun)
+	{
+		CharacterMovementComponent->SetWallrunInput(Vector2d);
+	}
 
 	 this->CurrentMovementDirection.bForward=(Vector2d.X>0.5);
 	 this->CurrentMovementDirection.bBackward=(Vector2d.X<-0.5);
 	 this->CurrentMovementDirection.bRight=(Vector2d.Y>0.5);
 	 this->CurrentMovementDirection.bLeft=(Vector2d.Y<-0.5);
 
-	if (Vector2d.X<0.5)
-	{
-		StopSprinting();
-	}
+	
+	
 
 }
 
@@ -227,6 +242,9 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 	
 	if (!GetMovementComponent()->IsFalling())
 		return;
+	
+	if((CharacterMovementComponent->Velocity*FVector(1,1,0)).Length()<CharacterMovementComponent->WallrunMinSpeed)
+		return;
 
 	FHitResult HitResultRight;
 
@@ -238,10 +256,10 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 
 
 	float dot=GetActorForwardVector().Dot(HitResultRight.Normal);
-	if (HitResultRight.bBlockingHit && dot < -0.1f && dot > -0.8f && CurrentMovementDirection.bForward)
+	
+	if (HitResultRight.bBlockingHit && dot < 0.3f && dot > -0.8f && CurrentMovementDirection.bForward)
 	{
-		Debug::Print("Hitting stuff on the right: "+FString::SanitizeFloat(dot), GetWorld()->GetDeltaSeconds());
-		CharacterMovementComponent->StartWallrun(true);
+		CharacterMovementComponent->StartWallrun(true, HitResultRight.Normal);
 	}
 
 	FHitResult HitResultLeft;
@@ -251,10 +269,9 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 	GetWorld()->LineTraceSingleByChannel(HitResultLeft,Start,End,ECC_GameTraceChannel1);
 
 	dot=GetActorForwardVector().Dot(HitResultLeft.Normal);
-	if(HitResultLeft.bBlockingHit && dot< -0.1f && dot >-0.8f && CurrentMovementDirection.bForward)
+	if(HitResultLeft.bBlockingHit && dot< 0.3f && dot >-0.8f && CurrentMovementDirection.bForward)
 	{
-		Debug::Print("Hitting stuff on the Left: "+FString::SanitizeFloat(dot), GetWorld()->DeltaTimeSeconds);
-		CharacterMovementComponent->StartWallrun(false);
+		CharacterMovementComponent->StartWallrun(false, HitResultLeft.Normal);
 	}
 }
 

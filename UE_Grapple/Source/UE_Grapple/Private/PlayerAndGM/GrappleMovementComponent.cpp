@@ -4,6 +4,7 @@
 #include "PlayerAndGM/GrappleMovementComponent.h"
 
 #include "Debug.h"
+#include "GrappleShooter/GrappleShooter.h"
 #include "Physics/ImmediatePhysics/ImmediatePhysicsShared/ImmediatePhysicsCore.h"
 #include "PlayerAndGM/GrapplePlayerCharacter.h"
 
@@ -64,11 +65,20 @@ bool UGrappleMovementComponent::IsCustomMovementMode(ECustomMovementMode InCusto
 	return MOVE_Custom && CustomMovementMode == InCustomMovementMode;
 }
 
-void UGrappleMovementComponent::StartWallrun(bool bRightSide)
+void UGrappleMovementComponent::StartWallrun(bool bRightSide, FVector SurfaceNormal)
 {
+	if(!bWallrunAllowed)
+		return;
+	
+	MyGrapplePlayerCharacter->MyGrappleShooter->LetGo();
+
+	
 	Debug::Print("Staring wallrun");
 	GravityScale=0;
 	this->bWallrunRight=bRightSide;
+	
+	this->WallrunZValue=this->Velocity.Z;
+	this->WallrunHorizontalVelocity=Wallrun_CalculateInitalHorizonatlVelocity(SurfaceNormal);
 	
 	SetMovementMode(MOVE_Custom, CMOVE_WallRun);
 }
@@ -80,26 +90,9 @@ void UGrappleMovementComponent::PhysWallrun(float deltaTime, int32 Iterations)
 	
 	RestorePreAdditiveRootMotionVelocity();
 
-	FHitResult HitResult =WallrunLineTrace(bWallrunRight); 
-
-	if(!HitResult.bBlockingHit || Velocity.Length()<300)
-	{
-		EndWallrun();
-		StartNewPhysics(deltaTime,Iterations);
-		return;
-	}
-		
-
-	float vectorRotation;
-	if(bWallrunRight)
-		vectorRotation=90;
-	else
-		vectorRotation=-90;
-
 
 	//Velocity+=FVector::DownVector*deltaTime*WallrunGravity;//applyGravity
 	
-
 	
 	if (!HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
 	{
@@ -107,19 +100,57 @@ void UGrappleMovementComponent::PhysWallrun(float deltaTime, int32 Iterations)
 	}
 	ApplyRootMotionToVelocity(deltaTime);
 
-
-
-
-	FQuat AbsoluteRotation =FQuat::MakeFromRotator(MyGrapplePlayerCharacter->GetActorRotation());
 	
+	FQuat AbsoluteRotation =FQuat::MakeFromRotator(MyGrapplePlayerCharacter->GetActorRotation());
 	Iterations++;
 	bJustTeleported=false;
 	FHitResult SweepHit= FHitResult();
-
 	FVector OldLocation=UpdatedComponent->GetComponentLocation();
+
+//____________________________________________________________
 	
-	Velocity = HitResult.Normal.RotateAngleAxis(vectorRotation,FVector(0,0,1));
-	FVector DeltaPosition = Velocity*WallrunMinSpeed*deltaTime;
+	FHitResult HitResult =WallrunLineTrace(bWallrunRight);
+	this->currentWallrunNormal=HitResult.Normal;
+	if(!HitResult.bBlockingHit || Velocity.Length()<this->WallrunMinSpeed)
+	{
+		EndWallrun();
+		StartNewPhysics(deltaTime,Iterations);
+		return;
+	}
+	
+	float vectorRotation;
+	if(bWallrunRight)
+		vectorRotation=90;
+	else
+		vectorRotation=-90;
+	
+	//sets the direction to walk in. value is normalized
+	FVector WallrunDirection = HitResult.Normal.RotateAngleAxis(vectorRotation,FVector(0,0,1));
+	
+	
+	
+	if(WallrunInput==FVector2d::Zero()||WallrunHorizontalVelocity>WallrunMaxSpeed)
+	{
+		WallrunHorizontalVelocity-=WallrunHorizontalFriction*deltaTime;
+	}
+	else
+	{
+		if(WallrunHorizontalVelocity<WallrunMaxSpeed)
+			WallrunHorizontalVelocity+= WallrunInput.X*WallrunHorizontalAcceleration*deltaTime;
+		else
+			WallrunHorizontalVelocity=WallrunMaxSpeed;
+	}
+
+	WallrunInput=FVector2d::Zero();//reset wallrun input to zero because move input event isnt called on 0 value
+
+	Velocity=WallrunDirection * this->WallrunHorizontalVelocity;
+	
+	WallrunZValue= Wallrun_DecreaseZValue(deltaTime);
+	Velocity.Z=WallrunZValue;
+	
+
+	
+	FVector DeltaPosition = Velocity*deltaTime;
 	
 
 	
@@ -157,10 +188,68 @@ FHitResult UGrappleMovementComponent::WallrunLineTrace(bool bRight)
 	return HitResult;
 }
 
+float UGrappleMovementComponent::Wallrun_DecreaseZValue(float deltaTime)
+{
+	if(abs(WallrunZValue)<10)
+		return 0;
+
+	if(WallrunZValue>0)
+		return WallrunZValue - WallrunVerticalBreakFactor*deltaTime;
+	else
+		return WallrunZValue + WallrunVerticalBreakFactor*deltaTime;
+}
+
+float UGrappleMovementComponent::Wallrun_CalculateInitalHorizonatlVelocity(FVector SurfaceNormal)
+{
+	FVector tmpVelocity= this->Velocity;
+	tmpVelocity.Z=0;
+	tmpVelocity.Normalize();
+
+	float dot = tmpVelocity.Dot(SurfaceNormal); //dot is negative
+	
+	// the closer the impact angle is to 90 degrees, the slower the inital speed is
+	float horizontalVelocity=(this->Velocity*(1+dot)*FVector(1,1,0)).Length();
+	if(horizontalVelocity>300)
+		return horizontalVelocity;
+	else
+		return 300;
+}
+
+
+
 void UGrappleMovementComponent::EndWallrun()
 {
 	Debug::Print("Ending wallrun");
 	GravityScale=GetDefault<UGrappleMovementComponent>()->GravityScale;
 	SetMovementMode(MOVE_Walking);
+
+	this->bWallrunAllowed=false;
+	FTimerHandle WallrunCooldownTimer;
+	GetWorld()->GetTimerManager().SetTimer(WallrunCooldownTimer, this, &UGrappleMovementComponent::AllowWallrun, 0.5,false);
+}
+
+void UGrappleMovementComponent::SetWallrunInput(FVector2d Input)
+{
+	WallrunInput=Input;
+}
+
+void UGrappleMovementComponent::JumpOffWall()
+{
+	EndWallrun();
+
+	FVector JumpVector = FVector();
+	
+
+	JumpVector= FVector::UpVector*2 + currentWallrunNormal;
+
+	JumpVector*=WallrunJumpOffFoce;
+
+	AddImpulse(JumpVector);
+
+}
+
+void UGrappleMovementComponent::AllowWallrun()
+{
+	this->bWallrunAllowed=true;
 }
 

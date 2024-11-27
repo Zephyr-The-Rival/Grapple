@@ -162,7 +162,7 @@ private:
 public:
 	//How close to the wall the player must be to start the wallrun
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float WallrunCheckDistance= 60;
+	float WallrunCheckDistance= 120;
 	
 	
 

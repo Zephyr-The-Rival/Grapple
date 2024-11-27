@@ -49,22 +49,46 @@ public:
 
 public:
 	
-	void StartWallrun(bool bRightSide);
+	void StartWallrun(bool bRightSide, FVector SurfaceNormal);
 	void EndWallrun();
+	void SetWallrunInput(FVector2d Input);
+	void JumpOffWall();
 	
 private:
+	bool bWallrunAllowed=true;
+	void AllowWallrun();
 	bool bWallrunRight;
 	
 	void PhysWallrun(float deltaTime, int32 Iterations);
 
 	FHitResult WallrunLineTrace(bool bRight);
+
+	float WallrunHorizontalVelocity;
+	float WallrunZValue;
+
+	float Wallrun_DecreaseZValue(float deltaTime);
+	float Wallrun_CalculateInitalHorizonatlVelocity(FVector SurfaceNormal);
+	FVector GetWallrunDirection(bool bRight); 
+
+	FVector2d WallrunInput;
+	FVector currentWallrunNormal;
 public:
 	//CustomParameters
 
-	//wallrun time in seconds
-	UPROPERTY(EditDefaultsOnly) float WallrunGravity=300;
+	//how much the character accellerates based on input
+	UPROPERTY(EditDefaultsOnly) float WallrunHorizontalAcceleration=800;
+	UPROPERTY(EditDefaultsOnly) float WallrunHorizontalFriction=200;
+
+	UPROPERTY(EditDefaultsOnly) float WallrunMaxSpeed=2000;
+
+	UPROPERTY(EditDefaultsOnly) float WallrunMinSpeed=300;
+
+	//Speed at which the vertical velocity value changes towards 0 while wallrunning (gets multiplied with deltatime)
+	UPROPERTY(EditDefaultsOnly) float WallrunVerticalBreakFactor=1000;
+
+	UPROPERTY(EditDefaultsOnly) float WallrunJumpOffFoce=100000;
+
 	
-	UPROPERTY(EditDefaultsOnly) float WallrunMinSpeed=600;
 };
 
 
