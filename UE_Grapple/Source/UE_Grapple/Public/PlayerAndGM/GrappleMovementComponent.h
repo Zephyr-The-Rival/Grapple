@@ -17,6 +17,9 @@ enum ECustomMovementMode
 	CMOVE_MAX UMETA(Hidden)
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWallrunStartEvent, bool, bRight);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWallrunEndEvent);
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class UE_GRAPPLE_API UGrappleMovementComponent : public UCharacterMovementComponent
 {
@@ -53,7 +56,8 @@ public:
 	void EndWallrun();
 	void SetWallrunInput(FVector2d Input);
 	void JumpOffWall();
-	
+	FWallrunStartEvent OnWallrunStart;
+	FWallrunEndEvent OnWallrunEnd;
 private:
 	bool bWallrunAllowed=true;
 	void AllowWallrun();

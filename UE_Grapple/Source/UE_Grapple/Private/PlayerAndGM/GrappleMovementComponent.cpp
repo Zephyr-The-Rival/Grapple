@@ -81,6 +81,7 @@ void UGrappleMovementComponent::StartWallrun(bool bRightSide, FVector SurfaceNor
 	this->WallrunHorizontalVelocity=Wallrun_CalculateInitalHorizonatlVelocity(SurfaceNormal);
 	
 	SetMovementMode(MOVE_Custom, CMOVE_WallRun);
+	this->OnWallrunStart.Broadcast(bRightSide);
 }
 
 void UGrappleMovementComponent::PhysWallrun(float deltaTime, int32 Iterations)
@@ -226,6 +227,7 @@ void UGrappleMovementComponent::EndWallrun()
 	this->bWallrunAllowed=false;
 	FTimerHandle WallrunCooldownTimer;
 	GetWorld()->GetTimerManager().SetTimer(WallrunCooldownTimer, this, &UGrappleMovementComponent::AllowWallrun, 0.5,false);
+	this->OnWallrunEnd.Broadcast();
 }
 
 void UGrappleMovementComponent::SetWallrunInput(FVector2d Input)

@@ -38,6 +38,9 @@ void AGrapplePlayerCharacter::BeginPlay()
 		CreateWidget<UUserWidget>(Cast<AGrapplePC>(GetController()), MainHud)->AddToViewport(0);
 	if (DebugStats)
 		CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()), DebugStats)->AddToViewport(1);
+
+	CharacterMovementComponent->OnWallrunStart.AddDynamic(this, &AGrapplePlayerCharacter::Wallrun_TiltMeshToSide);
+	CharacterMovementComponent->OnWallrunEnd.AddDynamic(this, &AGrapplePlayerCharacter::Wallrun_TiltMeshBack);
 }
 
 // Called every frame
@@ -53,6 +56,8 @@ void AGrapplePlayerCharacter::Tick(float DeltaTime)
 
 	if(CharacterMovementComponent->MovementMode!=ECustomMovementMode::CMOVE_WallRun)
 		Tick_WallrunCheck();
+
+	Tick_AdjustFieldOfView();
 }
 
 // Called to bind functionality to input
@@ -97,6 +102,8 @@ void AGrapplePlayerCharacter::Look(const FInputActionValue& Value)
 
 void AGrapplePlayerCharacter::JumpButtonDown()
 {
+	this->bJumping = true;
+	
 	if (CharacterMovementComponent->MovementMode == MOVE_Custom && CharacterMovementComponent->CustomMovementMode == ECustomMovementMode::CMOVE_WallRun)
 	{
 		CharacterMovementComponent->JumpOffWall();
@@ -110,12 +117,12 @@ void AGrapplePlayerCharacter::JumpButtonDown()
 	{
 		Jump(); //part of character;
 		OnStartJump.Broadcast();
-		this->bJumping = true;
 	}
 }
 
 void AGrapplePlayerCharacter::EndJump()
 {
+	this->bJumping = false;
 	if (bIsBoosting)
 	{
 		StopBoosting();
@@ -124,7 +131,7 @@ void AGrapplePlayerCharacter::EndJump()
 	{
 		StopJumping(); //part of character;
 		OnEndJump.Broadcast();
-		this->bJumping = false;
+		
 	}
 }
 
@@ -275,6 +282,14 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 	}
 }
 
+void AGrapplePlayerCharacter::Wallrun_TiltMeshToSide_Implementation(bool bRight)
+{
+}
+
+void AGrapplePlayerCharacter::Wallrun_TiltMeshBack_Implementation()
+{
+}
+
 void AGrapplePlayerCharacter::ShootGrapplePressed()
 {
 	if (!IsValid(MyGrappleShooter))
@@ -300,4 +315,17 @@ void AGrapplePlayerCharacter::SetDefaultValues()
 
 	this->MyGrappleShooter = Cast<AGrappleShooter>(GrappleShooterChildActor->GetChildActor());
 	this->BoostingFuel = this->MaxBoostingFuel;
+}
+
+void AGrapplePlayerCharacter::Tick_AdjustFieldOfView()
+{
+	float alpha=CharacterMovementComponent->Velocity.Length()/7000;
+	float TargetnewFieldOfView=FMath::Lerp(90,120,alpha);
+	
+	TargetnewFieldOfView=FMath::Clamp(TargetnewFieldOfView,90,120);
+	
+
+	float newFieldOfView=Camera->FieldOfView;
+	newFieldOfView=FMath::FInterpTo(newFieldOfView,TargetnewFieldOfView,GetWorld()->DeltaTimeSeconds,10);
+	this->Camera->FieldOfView=newFieldOfView;
 }

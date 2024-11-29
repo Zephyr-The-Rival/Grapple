@@ -51,7 +51,6 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UCameraComponent* Camera;
-
 //Input_____
 protected:
 
@@ -159,6 +158,16 @@ private:
 private:
 	void Tick_WallrunCheck();
 
+protected:
+
+	UFUNCTION(BlueprintNativeEvent)
+	void Wallrun_TiltMeshToSide(bool bRight);
+	void Wallrun_TiltMeshToSide_Implementation(bool bRight);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void Wallrun_TiltMeshBack();
+	void Wallrun_TiltMeshBack_Implementation();
+	
 public:
 	//How close to the wall the player must be to start the wallrun
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -192,6 +201,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="HUD");
 	TSubclassOf<UUserWidget> MainHud;
-	
-	
+
+	//speed field of view feedback
+private:
+	void Tick_AdjustFieldOfView();
 };
