@@ -250,8 +250,8 @@ void AGrapplePlayerCharacter::Tick_WallrunCheck()
 	if (!GetMovementComponent()->IsFalling())
 		return;
 	
-	if((CharacterMovementComponent->Velocity*FVector(1,1,0)).Length()<CharacterMovementComponent->WallrunMinSpeed)
-		return;
+	// if((CharacterMovementComponent->Velocity*FVector(1,1,0)).Length()<CharacterMovementComponent->WallrunMinSpeed)
+	// 	return;
 
 	FHitResult HitResultRight;
 

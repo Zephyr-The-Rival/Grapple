@@ -73,7 +73,6 @@ void UGrappleMovementComponent::StartWallrun(bool bRightSide, FVector SurfaceNor
 	MyGrapplePlayerCharacter->MyGrappleShooter->LetGo();
 
 	
-	Debug::Print("Staring wallrun");
 	GravityScale=0;
 	this->bWallrunRight=bRightSide;
 	
@@ -220,7 +219,6 @@ float UGrappleMovementComponent::Wallrun_CalculateInitalHorizonatlVelocity(FVect
 
 void UGrappleMovementComponent::EndWallrun()
 {
-	Debug::Print("Ending wallrun");
 	GravityScale=GetDefault<UGrappleMovementComponent>()->GravityScale;
 	SetMovementMode(MOVE_Walking);
 

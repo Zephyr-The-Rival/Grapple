@@ -20,7 +20,7 @@ enum ECustomMovementMode
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWallrunStartEvent, bool, bRight);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWallrunEndEvent);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent),Blueprintable)
 class UE_GRAPPLE_API UGrappleMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
@@ -76,6 +76,9 @@ private:
 
 	FVector2d WallrunInput;
 	FVector currentWallrunNormal;
+public:
+	UFUNCTION(BlueprintCallable)
+	FVector GetCurrentWallrunNormal() const {return this->currentWallrunNormal;}
 public:
 	//CustomParameters
 

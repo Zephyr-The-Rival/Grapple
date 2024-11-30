@@ -19,7 +19,6 @@ AGrappleProjectile::AGrappleProjectile()
 void AGrappleProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	Debug::Print("ProjectileSpawned");
 }
 
 // Called every frame
