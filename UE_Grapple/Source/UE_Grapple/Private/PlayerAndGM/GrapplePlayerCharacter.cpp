@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GrappleShooter/GrappleShooter.h"
+#include "Guns/Gun.h"
 #include "PlayerAndGM/GrappleMovementComponent.h"
 #include "PlayerAndGM/GrapplePC.h"
 
@@ -41,6 +42,12 @@ void AGrapplePlayerCharacter::BeginPlay()
 
 	CharacterMovementComponent->OnWallrunStart.AddDynamic(this, &AGrapplePlayerCharacter::Wallrun_TiltMeshToSide);
 	CharacterMovementComponent->OnWallrunEnd.AddDynamic(this, &AGrapplePlayerCharacter::Wallrun_TiltMeshBack);
+
+	if(StarterGun)
+		PickUpGun(GetWorld()->SpawnActor<AGun>(StarterGun, FVector(), FRotator()));
+	else
+		Debug::Print("Starter Gun isn't Valid!!!");
+			
 }
 
 // Called every frame
@@ -77,6 +84,7 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 	Input->BindAction(LookAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Look);
 	Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::Move);
+	Input->BindAction(MoveAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::EndMove);
 
 	Input->BindAction(JumpAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::JumpButtonDown);
 	Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::EndJump);
@@ -86,6 +94,9 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Started, this,&AGrapplePlayerCharacter::ShootGrapplePressed);
 	Input->BindAction(ShootGrapplingHookAction, ETriggerEvent::Completed, this,&AGrapplePlayerCharacter::ShootGrappleEnd);
+
+	Input->BindAction(ShootGunAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::PullGunTrigger);
+	Input->BindAction(ShootGunAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::ReleaseGunTrigger);
 }
 
 
@@ -161,10 +172,14 @@ void AGrapplePlayerCharacter::Move(const FInputActionValue& Value)
 	 this->CurrentMovementDirection.bBackward=(Vector2d.X<-0.5);
 	 this->CurrentMovementDirection.bRight=(Vector2d.Y>0.5);
 	 this->CurrentMovementDirection.bLeft=(Vector2d.Y<-0.5);
+}
 
-	
-	
-
+void AGrapplePlayerCharacter::EndMove()
+{
+	this->CurrentMovementDirection.bForward=false;
+	this->CurrentMovementDirection.bBackward=false;
+	this->CurrentMovementDirection.bRight=false;
+	this->CurrentMovementDirection.bLeft=false;
 }
 
 void AGrapplePlayerCharacter::SprintButtonDown()
@@ -328,4 +343,27 @@ void AGrapplePlayerCharacter::Tick_AdjustFieldOfView()
 	float newFieldOfView=Camera->FieldOfView;
 	newFieldOfView=FMath::FInterpTo(newFieldOfView,TargetnewFieldOfView,GetWorld()->DeltaTimeSeconds,10);
 	this->Camera->FieldOfView=newFieldOfView;
+}
+
+void AGrapplePlayerCharacter::PickUpGun(AGun* NewGun)
+{
+	FAttachmentTransformRules rules= FAttachmentTransformRules(EAttachmentRule::SnapToTarget,EAttachmentRule::SnapToTarget,EAttachmentRule::SnapToTarget,false);
+	NewGun->AttachToComponent(this->GetMesh(),rules, "weapon_rSocket");
+	this->CurrentGun=NewGun;
+}
+
+void AGrapplePlayerCharacter::PullGunTrigger()
+{
+	if(!CurrentGun)
+		return;
+
+	CurrentGun->PullTrigger();
+}
+
+void AGrapplePlayerCharacter::ReleaseGunTrigger()
+{
+	if(!CurrentGun)
+		return;
+	
+	CurrentGun->ReleaseTrigger();
 }

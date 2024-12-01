@@ -9,6 +9,7 @@
 #include "CableComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AGrappleShooter::AGrappleShooter()
@@ -130,6 +131,9 @@ void AGrappleShooter::SpawnProjectile(UCameraComponent* PlayerCamera)
 	this->CableComponent->SetAttachEndTo(CurrentProjectile, "Mesh");
 
 	CurrentProjectile->OnHit.AddUFunction(this, "StartPulling");
+
+	if(GrappleShooterMesh)
+		UNiagaraFunctionLibrary::SpawnSystemAttached(GrappleShooterSteam,MyCharacter->GetCapsuleComponent(),FName(""),GrappleShooterMesh->GetSocketLocation("ParticleSocket"), GrappleShooterMesh->GetSocketRotation("ParticleSocket"),EAttachLocation::Type::KeepWorldPosition,true);
 	
 }
 

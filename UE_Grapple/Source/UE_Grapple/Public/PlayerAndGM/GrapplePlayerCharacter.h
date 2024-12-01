@@ -8,6 +8,7 @@
 
 //UInputAction;
 
+class AGun;
 class UGrappleMovementComponent;
 struct FInputActionValue;
 class UInputAction;
@@ -75,6 +76,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* ShootGrapplingHookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* ShootGunAction;
+
 
 //Movement_____
 protected:
@@ -107,6 +111,7 @@ public:
 protected:
 	//walking
 	void Move(const FInputActionValue& Value);
+	void EndMove();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement/Walking")
 	float WalkingSpeed = 300;
@@ -205,4 +210,18 @@ protected:
 	//speed field of view feedback
 private:
 	void Tick_AdjustFieldOfView();
+
+	//Gun 
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	AGun* CurrentGun;
+private:
+	void PickUpGun(AGun* NewGun);
+	void PullGunTrigger();
+	void ReleaseGunTrigger();
+	
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<AGun> StarterGun;
 };

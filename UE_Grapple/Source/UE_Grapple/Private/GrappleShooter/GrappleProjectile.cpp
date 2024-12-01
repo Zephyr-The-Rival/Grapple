@@ -3,6 +3,7 @@
 
 #include "GrappleShooter/GrappleProjectile.h"
 #include "Debug.h"
+#include "NiagaraFunctionLibrary.h"
 
 
 // Sets default values
@@ -38,6 +39,9 @@ void AGrappleProjectile::Tick(float DeltaTime)
 			FAttachmentTransformRules rules = FAttachmentTransformRules(EAttachmentRule::KeepWorld,EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld,false); 
 			this->AttachToComponent(ProjectileHitResult.GetComponent(),rules);
 
+			if(SparksOnHit)
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(),SparksOnHit,ProjectileHitResult.Location);
+			
 			OnHit.Broadcast();
 		}
 	}

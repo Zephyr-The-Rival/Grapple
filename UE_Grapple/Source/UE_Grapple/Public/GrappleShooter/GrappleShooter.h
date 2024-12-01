@@ -10,6 +10,7 @@
 class UCableComponent;
 class UCameraComponent;
 class AGrappleProjectile;
+class UNiagaraSystem;
 
 UENUM(BlueprintType)
 enum class EGrappleState :uint8
@@ -108,5 +109,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SoftCooldownOver();
-	
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UNiagaraSystem* GrappleShooterSteam;
 };

@@ -8,6 +8,7 @@
 
 DECLARE_MULTICAST_DELEGATE(Event);
 
+class UNiagaraSystem;
 UCLASS()
 class UE_GRAPPLE_API AGrappleProjectile : public AActor
 {
@@ -41,5 +42,9 @@ private:
 public:
 	void StopMove();
 	Event OnHit;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UNiagaraSystem* SparksOnHit;
 
 };
