@@ -11,6 +11,7 @@ enum class EGunState: uint8
 {
 	Idle UMETA(DisplayName="Idle"),
 	Shooting UMETA(DisplayName="Shooting"),
+	SoftCoolDown UMETA(DisplayName="SoftCoolDown"),
 	Reloading UMETA(DisplayName="Reloading")
 };
 UCLASS()
@@ -37,8 +38,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool bAutomatic=false;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float FireInterval=0.5;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -52,12 +51,15 @@ public:
 	void ReleaseTrigger();
 	void Reload();
 
+	//The shoot animation takes longer then the shoot cycle so it enters a soft cool down first
+	//this function is called at the end of a shooting animatoin so it can ender idle again
+	UFUNCTION(BlueprintCallable)
+	void SetGunState(EGunState NewState);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EGunState State=EGunState::Idle;
 private:
-	bool bFireReady=true;
 	void Shoot();
-	void FinishShootCycle();
 	bool bFirstShot=true;
 	
 };

@@ -31,7 +31,7 @@ void AGun::Tick(float DeltaTime)
 
 void AGun::PullTrigger()
 {
-	if(!bFireReady || !bFirstShot && !bAutomatic)
+	if(!bFirstShot && !bAutomatic)
 		return;
 	
 	if(Ammo==0)
@@ -40,25 +40,18 @@ void AGun::PullTrigger()
 		return;
 	}
 
-	if(bFireReady)
+	if(State==EGunState::Idle||State==EGunState::SoftCoolDown)
 		Shoot();
 }
 
 void AGun::Shoot()
 {
-	this->bFireReady=false;
 	bFirstShot=false;
 	State=EGunState::Shooting;
 	Ammo--;
-	FTimerHandle ShootCoolDown;
-	GetWorld()->GetTimerManager().SetTimer(ShootCoolDown,this, &AGun::FinishShootCycle, this->FireInterval,false);
 }
 
-void AGun::FinishShootCycle()
-{
-	this->bFireReady=true;
-	this->State=EGunState::Idle;
-}
+
 
 
 void AGun::ReleaseTrigger()
@@ -69,6 +62,11 @@ void AGun::ReleaseTrigger()
 void AGun::Reload()
 {
 	State=EGunState::Reloading;
+}
+
+void AGun::SetGunState(EGunState NewState)
+{
+	State=NewState;
 }
 
 
