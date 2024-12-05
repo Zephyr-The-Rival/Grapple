@@ -40,6 +40,9 @@ void AGrapplePlayerCharacter::BeginPlay()
 	if (DebugStats)
 		CreateWidget<UUserWidget>(Cast<APlayerController>(GetController()), DebugStats)->AddToViewport(1);
 
+	if(this->MyGrappleShooter)
+		MyGrappleShooter->OnGrappleStateStateChanged.AddDynamic(this, &AGrapplePlayerCharacter::OnGrappleStateChanged);
+	
 	CharacterMovementComponent->OnWallrunStart.AddDynamic(this, &AGrapplePlayerCharacter::Wallrun_TiltMeshToSide);
 	CharacterMovementComponent->OnWallrunEnd.AddDynamic(this, &AGrapplePlayerCharacter::Wallrun_TiltMeshBack);
 
@@ -97,6 +100,8 @@ void AGrapplePlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 	Input->BindAction(ShootGunAction, ETriggerEvent::Triggered, this, &AGrapplePlayerCharacter::PullGunTrigger);
 	Input->BindAction(ShootGunAction, ETriggerEvent::Completed, this, &AGrapplePlayerCharacter::ReleaseGunTrigger);
+
+	Input->BindAction(ReloadAction, ETriggerEvent::Started, this, &AGrapplePlayerCharacter::ReloadGun);
 }
 
 
@@ -310,10 +315,13 @@ void AGrapplePlayerCharacter::ShootGrapplePressed()
 	if (!IsValid(MyGrappleShooter))
 		return;
 
-	if (!(MyGrappleShooter->State == EGrappleState::Standby || MyGrappleShooter->State == EGrappleState::SoftCoolDown))
+	if (!(MyGrappleShooter->GetGrappleState() == EGrappleState::Standby || MyGrappleShooter->GetGrappleState() == EGrappleState::SoftCoolDown))
 		return;
 
-	MyGrappleShooter->State = EGrappleState::ShootingOut; //will trigger the animatoin that will shoot the projectile
+	if(CurrentGun->State==EGunState::Reloading)
+		return;
+
+	MyGrappleShooter->SetGrappleState(EGrappleState::ShootingOut); //will trigger the animatoin that will shoot the projectile
 }
 
 void AGrapplePlayerCharacter::ShootGrappleEnd()
@@ -322,6 +330,10 @@ void AGrapplePlayerCharacter::ShootGrappleEnd()
 		return;
 
 	MyGrappleShooter->LetGo();
+}
+
+void AGrapplePlayerCharacter::OnGrappleStateChanged_Implementation(EGrappleState NewState)
+{
 }
 
 void AGrapplePlayerCharacter::SetDefaultValues()
@@ -350,14 +362,22 @@ void AGrapplePlayerCharacter::PickUpGun(AGun* NewGun)
 	FAttachmentTransformRules rules= FAttachmentTransformRules(EAttachmentRule::SnapToTarget,EAttachmentRule::SnapToTarget,EAttachmentRule::SnapToTarget,false);
 	NewGun->AttachToComponent(this->GetMesh(),rules, "weapon_rSocket");
 	this->CurrentGun=NewGun;
+	CurrentGun->OnGunStateChanged.AddDynamic(this,&AGrapplePlayerCharacter::OnGunStateChanged);
 }
 
 void AGrapplePlayerCharacter::PullGunTrigger()
 {
 	if(!CurrentGun)
 		return;
+	
+	if(!(CurrentGun->State==EGunState::Idle||CurrentGun->State==EGunState::SoftCoolDown))
+		return;
 
-	CurrentGun->PullTrigger();
+	
+	if(CurrentGun->Ammo==0)
+		ReloadGun();
+	else
+		CurrentGun->PullTrigger();
 }
 
 void AGrapplePlayerCharacter::ReleaseGunTrigger()
@@ -366,4 +386,19 @@ void AGrapplePlayerCharacter::ReleaseGunTrigger()
 		return;
 	
 	CurrentGun->ReleaseTrigger();
+}
+
+void AGrapplePlayerCharacter::ReloadGun()
+{
+	if(CurrentGun->Ammo==CurrentGun->MaxAmmo)
+		return;
+	
+	ShootGrappleEnd();
+
+	CurrentGun->SetGunState(EGunState::Reloading);
+}
+
+void AGrapplePlayerCharacter::OnGunStateChanged_Implementation(EGunState newState)
+{
+	
 }

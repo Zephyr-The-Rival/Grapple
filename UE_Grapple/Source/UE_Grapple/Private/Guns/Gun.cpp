@@ -34,20 +34,13 @@ void AGun::PullTrigger()
 	if(!bFirstShot && !bAutomatic)
 		return;
 	
-	if(Ammo==0)
-	{
-		Reload();
-		return;
-	}
-
-	if(State==EGunState::Idle||State==EGunState::SoftCoolDown)
-		Shoot();
+	this->Shoot();
 }
 
 void AGun::Shoot()
 {
 	bFirstShot=false;
-	State=EGunState::Shooting;
+	SetGunState(EGunState::Shooting);
 	Ammo--;
 }
 
@@ -59,14 +52,16 @@ void AGun::ReleaseTrigger()
 	bFirstShot=true;
 }
 
-void AGun::Reload()
+void AGun::RefillAmmo()
 {
-	State=EGunState::Reloading;
+	this->Ammo=this->MaxAmmo;
 }
+
 
 void AGun::SetGunState(EGunState NewState)
 {
 	State=NewState;
+	OnGunStateChanged.Broadcast(NewState);
 }
 
 

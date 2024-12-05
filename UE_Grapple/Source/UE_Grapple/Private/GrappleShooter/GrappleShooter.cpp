@@ -96,7 +96,7 @@ void AGrappleShooter::Tick(float DeltaTime)
 		this->CoolDownTimeCounter+=DeltaTime;
 		if(this->CoolDownTimeCounter>=this->CoolDownTime)
 		{
-			State=EGrappleState::Standby;
+			SetGrappleState(EGrappleState::Standby);
 		}
 	}
 	
@@ -139,7 +139,7 @@ void AGrappleShooter::SpawnProjectile(UCameraComponent* PlayerCamera)
 
 void AGrappleShooter::StartPulling()
 {
-	this->State=EGrappleState::Pulling;
+	SetGrappleState(EGrappleState::Pulling);
 }
 
 void AGrappleShooter::LetGo()
@@ -149,7 +149,7 @@ void AGrappleShooter::LetGo()
 
 	if(!CurrentProjectile)
 	{
-		this->State=EGrappleState::SoftCoolDown;
+		SetGrappleState(EGrappleState::SoftCoolDown);
 		return;
 	}
 		
@@ -164,7 +164,13 @@ void AGrappleShooter::LetGo()
 	float ReelInTimeAlpha= FVector::Distance(this->GetActorLocation(),CurrentProjectile->GetActorLocation())/MaxReelInTimeDistance;
 	this->ReelInTime=FMath::Lerp(0,MaxReelInTime,ReelInTimeAlpha); //is used on tick while reeling in
 	
-	State=EGrappleState::ReelingIn;
+	SetGrappleState(EGrappleState::ReelingIn);
+}
+
+void AGrappleShooter::SetGrappleState(EGrappleState NewState)
+{
+	this->State=NewState;
+	OnGrappleStateStateChanged.Broadcast(this->State);
 }
 
 void AGrappleShooter::StartCoolDown()
@@ -173,16 +179,16 @@ void AGrappleShooter::StartCoolDown()
 	CurrentProjectile->Destroy();
 	CurrentProjectile=nullptr;//destroy doesnt seem to be enough
 	this->CoolDownTimeCounter=0;
-	this->State = EGrappleState::CoolDown;
+	this->SetGrappleState(EGrappleState::CoolDown);
 }
 
 void AGrappleShooter::StartSoftCooldown()
 {
-	this->State=EGrappleState::SoftCoolDown;
+	this->SetGrappleState(EGrappleState::SoftCoolDown);
 }
 
 void AGrappleShooter::SoftCooldownOver()
 {
-	this->State=EGrappleState::Standby;
+	this->SetGrappleState(EGrappleState::Standby);
 }
 

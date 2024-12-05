@@ -14,6 +14,9 @@ enum class EGunState: uint8
 	SoftCoolDown UMETA(DisplayName="SoftCoolDown"),
 	Reloading UMETA(DisplayName="Reloading")
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeStateDelegate, EGunState, newState);
+
 UCLASS()
 class UE_GRAPPLE_API AGun : public AActor
 {
@@ -49,10 +52,13 @@ public:
 public:
 	void PullTrigger();
 	void ReleaseTrigger();
-	void Reload();
 
+	UFUNCTION(BlueprintCallable)
+	void RefillAmmo();
 	//The shoot animation takes longer then the shoot cycle so it enters a soft cool down first
 	//this function is called at the end of a shooting animatoin so it can ender idle again
+
+	FChangeStateDelegate OnGunStateChanged;
 	UFUNCTION(BlueprintCallable)
 	void SetGunState(EGunState NewState);
 

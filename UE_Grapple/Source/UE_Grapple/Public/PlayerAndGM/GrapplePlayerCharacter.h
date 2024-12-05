@@ -8,6 +8,8 @@
 
 //UInputAction;
 
+enum class EGrappleState : uint8;
+enum class EGunState : uint8;
 class AGun;
 class UGrappleMovementComponent;
 struct FInputActionValue;
@@ -78,6 +80,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	UInputAction* ShootGunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	UInputAction* ReloadAction;
 
 
 //Movement_____
@@ -188,9 +193,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UChildActorComponent* GrappleShooterChildActor;
 
+	UFUNCTION(BlueprintNativeEvent)
+	void OnGrappleStateChanged(EGrappleState NewState);
+	void OnGrappleStateChanged_Implementation(EGrappleState NewState);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	AGrappleShooter* MyGrappleShooter;
+	
 
 	
 //Debug
@@ -220,8 +230,12 @@ private:
 	void PickUpGun(AGun* NewGun);
 	void PullGunTrigger();
 	void ReleaseGunTrigger();
-	
+	void ReloadGun();
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<AGun> StarterGun;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnGunStateChanged(EGunState newState);
+	void OnGunStateChanged_Implementation(EGunState newState);
 };

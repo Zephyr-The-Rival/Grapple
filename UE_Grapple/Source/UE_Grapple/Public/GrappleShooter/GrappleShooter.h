@@ -23,6 +23,7 @@ enum class EGrappleState :uint8
 	SoftCoolDown UMETA(DisplayName="Soft cool down")
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangedStateDelegate, EGrappleState, NewState);
 
 class AGrapplePlayerCharacter;
 
@@ -55,8 +56,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* GrappleShooterMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+private:
 	EGrappleState State = EGrappleState::Standby;
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EGrappleState GetGrappleState() const{return this->State;}
+
+	UFUNCTION(BlueprintCallable)
+	void SetGrappleState(EGrappleState NewState);
+
+	FChangedStateDelegate OnGrappleStateStateChanged;
+	
 protected:
 	AGrapplePlayerCharacter* MyCharacter;
 

@@ -2,6 +2,14 @@
 
 #include "Debug.h"
 
+void AGrapplePC::BeginPlay()
+{
+	Super::BeginPlay();
+	SetInputMode(FInputModeGameOnly());
+	
+	EMouseLockMode::LockAlways;
+}
+
 void AGrapplePC::OnAnyKeyPressed(const FKey& Key)
 {
 	this->bIsUsingGamepad = Key.IsGamepadKey();
