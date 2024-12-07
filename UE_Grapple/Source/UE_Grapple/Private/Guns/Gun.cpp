@@ -4,6 +4,8 @@
 #include "Guns/Gun.h"
 
 #include "Debug.h"
+#include "Guns/Projectile.h"
+#include "PlayerAndGM/GrapplePlayerCharacter.h"
 
 
 // Sets default values
@@ -18,7 +20,9 @@ AGun::AGun()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if(!GunMesh->DoesSocketExist("BulletSocket"))
+		Debug::Print("Gun doesnt have a 'BulletSocket'");
+		
 }
 
 // Called every frame
@@ -42,9 +46,34 @@ void AGun::Shoot()
 	bFirstShot=false;
 	SetGunState(EGunState::Shooting);
 	Ammo--;
+
+	if(!this->ProjectileToSpawn)
+		return;
+
+	
+	FHitResult hit = Cast<AGrapplePlayerCharacter>(GetAttachParentActor())->PerformShootLineTrace();
+
+	FTransform BulletSocket=this->GunMesh->GetSocketTransform("BulletSocket");
+	FRotator BulletRotation;
+	if(hit.bBlockingHit)
+	{
+		FVector ShootVector= hit.Location-BulletSocket.GetLocation();
+		BulletRotation=ShootVector.ToOrientationRotator();
+	}
+	else
+	{
+		BulletRotation=(hit.TraceEnd-hit.TraceStart).ToOrientationRotator();
+	}
+
+	
+	GetWorld()->SpawnActor<AProjectile>(ProjectileToSpawn, BulletSocket.GetLocation(),BulletRotation);
+	
+	OnShoot();
 }
 
-
+void AGun::OnShoot_Implementation()
+{
+}
 
 
 void AGun::ReleaseTrigger()

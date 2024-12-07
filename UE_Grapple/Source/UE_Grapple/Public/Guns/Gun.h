@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Gun.generated.h"
 
+class AProjectile;
+
 UENUM(BlueprintType)
 enum class EGunState: uint8
 {
@@ -45,9 +47,14 @@ protected:
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	int MaxAmmo=6;
-
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	int Ammo=6;
+	TSubclassOf<AProjectile> ProjectileToSpawn;
+
+private: int Ammo=6;
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int GetAmmo() const{return this->Ammo;}
 
 public:
 	void PullTrigger();
@@ -67,5 +74,10 @@ public:
 private:
 	void Shoot();
 	bool bFirstShot=true;
+
+protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void OnShoot();
+	void OnShoot_Implementation();
 	
 };

@@ -374,7 +374,7 @@ void AGrapplePlayerCharacter::PullGunTrigger()
 		return;
 
 	
-	if(CurrentGun->Ammo==0)
+	if(CurrentGun->GetAmmo()==0)
 		ReloadGun();
 	else
 		CurrentGun->PullTrigger();
@@ -390,7 +390,7 @@ void AGrapplePlayerCharacter::ReleaseGunTrigger()
 
 void AGrapplePlayerCharacter::ReloadGun()
 {
-	if(CurrentGun->Ammo==CurrentGun->MaxAmmo)
+	if(CurrentGun->GetAmmo()==CurrentGun->MaxAmmo)
 		return;
 	
 	ShootGrappleEnd();
@@ -401,4 +401,15 @@ void AGrapplePlayerCharacter::ReloadGun()
 void AGrapplePlayerCharacter::OnGunStateChanged_Implementation(EGunState newState)
 {
 	
+}
+
+FHitResult AGrapplePlayerCharacter::PerformShootLineTrace()
+{
+	FHitResult hit;
+	FVector Start= Camera->GetComponentLocation();
+	FVector End= Start+Camera->GetForwardVector()*30000; 
+	
+	GetWorld()->LineTraceSingleByChannel(hit, Start, End, ECC_Visibility);
+
+	return hit;
 }

@@ -238,4 +238,6 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnGunStateChanged(EGunState newState);
 	void OnGunStateChanged_Implementation(EGunState newState);
+public:
+	FHitResult PerformShootLineTrace();
 };

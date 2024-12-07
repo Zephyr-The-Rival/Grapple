@@ -91,14 +91,6 @@ void AGrappleShooter::Tick(float DeltaTime)
 		}
 		
 	}
-	if(State==EGrappleState::CoolDown)
-	{
-		this->CoolDownTimeCounter+=DeltaTime;
-		if(this->CoolDownTimeCounter>=this->CoolDownTime)
-		{
-			SetGrappleState(EGrappleState::Standby);
-		}
-	}
 	
 }
 
@@ -149,7 +141,7 @@ void AGrappleShooter::LetGo()
 
 	if(!CurrentProjectile)
 	{
-		SetGrappleState(EGrappleState::SoftCoolDown);
+		SetGrappleState(EGrappleState::CoolDown);
 		return;
 	}
 		
@@ -177,8 +169,7 @@ void AGrappleShooter::StartCoolDown()
 {
 	this->CableComponent->SetHiddenInGame(true);
 	CurrentProjectile->Destroy();
-	CurrentProjectile=nullptr;//destroy doesnt seem to be enough
-	this->CoolDownTimeCounter=0;
+	CurrentProjectile=nullptr;//destroy doesn't seem to be enough
 	this->SetGrappleState(EGrappleState::CoolDown);
 }
 

@@ -92,8 +92,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MaxReelInTimeDistance= 5000;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float CoolDownTime =1;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -112,7 +110,6 @@ private:
 	FVector InitalProjectileReelInPosition;
 	float ReelInTime=0;
 	void StartCoolDown();
-	float CoolDownTimeCounter=0;
 
 public:
 	UFUNCTION(BlueprintCallable)
