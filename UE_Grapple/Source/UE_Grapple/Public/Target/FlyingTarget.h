@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "FlyingTarget.generated.h"
 
+class ATargetBounds;
+
 UENUM(BlueprintType)
 enum class ETargetState: uint8
 {
@@ -41,10 +43,11 @@ private:
 	ETargetState State;
 	FVector NewLoaction;
 	FVector NormalizedMovementDirection;
-
+	FVector OldLocation;
+	float distanceLastFrame;
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float MovementSpeed=300;
+	float MovementSpeed=700;
 
 private:
 
@@ -52,4 +55,31 @@ private:
 	void ArrivedAtNewLocation();
 	FHitResult PerformCapsuleTrace(FVector EndPoint);
 	TArray<FVector> GenerateSearchPoints();
+	bool IsLocationValid(FHitResult* HitResult);
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	bool bShowDebug=false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	float TraceCapsuleSize=50;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	int32 HeightLevels=4;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	float SpaceBetweenLevels=200;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	int32 PointsPerCircle=5;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	int32 CircleRadius=300;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Navigation")
+	int32 NumOfCirclesPerLevel=3;
+
+private:
+	ATargetBounds* MyBounds;
 };

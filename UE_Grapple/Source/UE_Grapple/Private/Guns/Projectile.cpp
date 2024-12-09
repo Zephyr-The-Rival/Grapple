@@ -4,7 +4,7 @@
 #include "Guns/Projectile.h"
 
 #include "Debug.h"
-#include "Components/ArrowComponent.h"
+#include "Target/FlyingTarget.h"
 #include "Components/SphereComponent.h"
 
 
@@ -35,6 +35,9 @@ void AProjectile::Tick(float DeltaTime)
 	if(hit.bBlockingHit)
 	{
 		Debug::Print("Bullet hit something"+hit.GetActor()->GetName());
+		if(Cast<AFlyingTarget>(hit.GetActor()))
+			hit.GetActor()->Destroy();
+		
 		OnHitEvent.Broadcast(hit);
 		Destroy();
 	}

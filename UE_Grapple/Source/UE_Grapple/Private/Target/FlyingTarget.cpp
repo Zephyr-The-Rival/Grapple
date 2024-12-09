@@ -1,9 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FlyingTarget.h"
+#include "Target/FlyingTarget.h"
 
+#include "Debug.h"
+#include "EngineUtils.h"
+#include "DynamicMesh/DynamicMesh3.h"
+#include "Kismet/GameplayStatics.h"
 #include "PlayerAndGM/GrapplePlayerCharacter.h"
+#include "Target/TargetBounds.h"
+#include "Windows/AllowWindowsPlatformTypes.h"
 
 
 // Sets default values
@@ -19,7 +25,13 @@ void AFlyingTarget::BeginPlay()
 {
 	Super::BeginPlay();
 	State=ETargetState::Idle;
-	LookForNewLocation();
+
+	
+	MyBounds = Cast<ATargetBounds>(UGameplayStatics::GetActorOfClass(GetWorld(),ATargetBounds::StaticClass()));
+	if(MyBounds)
+		LookForNewLocation();
+	else
+		Debug::Print("Target Bounds not found!");
 	
 }
 
@@ -29,10 +41,12 @@ void AFlyingTarget::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if(State==ETargetState::MovingToNewPosition)
 	{
-		if(FVector::Distance(GetActorLocation(), NewLoaction)<10)
+		float currentDistance= FVector::Distance(GetActorLocation(), NewLoaction);
+		if(distanceLastFrame<currentDistance)
 		{
 			ArrivedAtNewLocation();
 		}
+		distanceLastFrame=currentDistance;
 			
 
 		AddActorWorldOffset(NormalizedMovementDirection*DeltaTime*MovementSpeed);
@@ -48,13 +62,25 @@ void AFlyingTarget::LookForNewLocation()
 	for (FVector SearchPoint : SearchPoints)
 	{
 		FHitResult hit=PerformCapsuleTrace(SearchPoint);
-		if(!hit.bBlockingHit)
+
+		//condition of what points are viable
+		if (IsLocationValid(&hit))
 			ViablePoints.Add(SearchPoint);
 	}
 
-	NewLoaction=ViablePoints[FMath::FRandRange(0.0f, ViablePoints.Num()-1)];
+	if(ViablePoints.IsEmpty())
+	{
+		NewLoaction=OldLocation;
+	}
+	else
+	{
+		NewLoaction=ViablePoints[FMath::FRandRange(0.0f, ViablePoints.Num()-1)];
+	}
+	OldLocation=GetActorLocation();
 	NormalizedMovementDirection=NewLoaction-GetActorLocation();
 	NormalizedMovementDirection.Normalize();
+
+	distanceLastFrame=FLT_MAX;
 	
 	State = ETargetState::MovingToNewPosition;
 }
@@ -73,8 +99,6 @@ FHitResult AFlyingTarget::PerformCapsuleTrace(FVector EndPoint)
 	FHitResult HitResult;
 
 	
-	float CapsuleRadius = 50.0f; // Default radius
-	float CapsuleHalfHeight = 50.0f; // Default half height
 	ECollisionChannel TraceChannel = ECC_Visibility; // Default trace channel
 
 	FCollisionQueryParams QueryParams;
@@ -88,15 +112,21 @@ FHitResult AFlyingTarget::PerformCapsuleTrace(FVector EndPoint)
 		EndPoint,
 		FQuat::Identity, // Orientation of the capsule; adjust if needed
 		TraceChannel,
-		FCollisionShape::MakeCapsule(CapsuleRadius, CapsuleHalfHeight),
+		FCollisionShape::MakeCapsule(this->TraceCapsuleSize, this->TraceCapsuleSize),
 		QueryParams
 	);
 
-	// Optionally draw debug visuals
-	FColor DebugColor = bHit ? FColor::Red : FColor::Green;
-	DrawDebugCapsule(GetWorld(), GetActorLocation(), CapsuleHalfHeight, CapsuleRadius, FQuat::Identity, DebugColor, false, 2.0f);
-	DrawDebugCapsule(GetWorld(), EndPoint, CapsuleHalfHeight, CapsuleRadius, FQuat::Identity, DebugColor, false, 2.0f);
-	DrawDebugLine(GetWorld(), GetActorLocation(), EndPoint, DebugColor, false, 2.0f, 0, 2.0f);
+	if(this->bShowDebug)
+	{
+		FColor DebugColor = FColor::Red;
+		if(IsLocationValid(&HitResult))
+			DebugColor=FColor::Green;
+		
+		DrawDebugCapsule(GetWorld(), GetActorLocation(), this->TraceCapsuleSize, this->TraceCapsuleSize, FQuat::Identity, FColor::Cyan, false, 2.0f);
+		DrawDebugCapsule(GetWorld(), EndPoint, this->TraceCapsuleSize, this->TraceCapsuleSize, FQuat::Identity, DebugColor, false, 2.0f);
+		DrawDebugLine(GetWorld(), GetActorLocation(), EndPoint, DebugColor, false, 2.0f, 0, 2.0f);	
+	}
+	
 
 	return HitResult;
 }
@@ -104,29 +134,24 @@ FHitResult AFlyingTarget::PerformCapsuleTrace(FVector EndPoint)
 TArray<FVector> AFlyingTarget::GenerateSearchPoints()
 {
 	TArray<FVector> Points;
+	
+	float ZValue= GetActorLocation().Z-(this->HeightLevels/2)*SpaceBetweenLevels; //starting height for generating circles
 
-	int levels=5;
-	float SpaceBetweenLevels=200;
-	float ZValue= GetActorLocation().Z-(levels/2)*SpaceBetweenLevels; //starting height for generating circles
-
-	if(levels%2==0)
+	if(this->HeightLevels%2==0)
 		ZValue+=SpaceBetweenLevels/2.0f;
 	
-	int PointsInCircle=6;
-	float AngleStepSize=360/PointsInCircle;
-	int Radius=300;
+	float AngleStepSize=360/PointsPerCircle;
 
-	int NumOfCirclesPerLevel=3;
 	
-	for (int l = 0; l < levels; l++)
+	for (int l = 0; l < this->HeightLevels; l++)
 	{
 		for(int i=1; i<=NumOfCirclesPerLevel; i++)
 		{
-			for (int c = 0; c < PointsInCircle; c++)
+			for (int c = 0; c < PointsPerCircle; c++)
 			{
 				FVector RotationCenter= GetActorLocation();
 				RotationCenter.Z=ZValue;
-				FVector point= RotationCenter+ FVector(Radius*i,0,0).RotateAngleAxis(AngleStepSize*c, FVector::UpVector);
+				FVector point= RotationCenter+ FVector(this->CircleRadius*i,0,0).RotateAngleAxis(AngleStepSize*c, FVector::UpVector);
 				//DrawDebugCapsule(GetWorld(), point, 50, 50, FQuat::Identity, FColor::Cyan, false, 10.0f);
 				Points.Add(point);
 			}
@@ -136,5 +161,10 @@ TArray<FVector> AFlyingTarget::GenerateSearchPoints()
 	}
 	
 	return Points;
+}
+
+bool AFlyingTarget::IsLocationValid(FHitResult* HitResult)
+{
+	return (!HitResult->bBlockingHit && MyBounds->IsLocationInBounds(HitResult->TraceEnd));
 }
 
