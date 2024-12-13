@@ -99,10 +99,10 @@ FHitResult AFlyingTarget::PerformCapsuleTrace(FVector EndPoint)
 	FHitResult HitResult;
 
 	
-	ECollisionChannel TraceChannel = ECC_Visibility; // Default trace channel
+	ECollisionChannel TraceChannel = ECC_Visibility;
 
 	FCollisionQueryParams QueryParams;
-	QueryParams.bTraceComplex = true; // Enable this for more detailed collision checks if necessary
+	QueryParams.bTraceComplex = true; 
 	QueryParams.AddIgnoredActor(this);
 
 	// Perform the trace
@@ -110,7 +110,7 @@ FHitResult AFlyingTarget::PerformCapsuleTrace(FVector EndPoint)
 		HitResult,
 		GetActorLocation(),
 		EndPoint,
-		FQuat::Identity, // Orientation of the capsule; adjust if needed
+		FQuat::Identity,
 		TraceChannel,
 		FCollisionShape::MakeCapsule(this->TraceCapsuleSize, this->TraceCapsuleSize),
 		QueryParams
